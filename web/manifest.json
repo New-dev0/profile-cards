@@ -1,6 +1,6 @@
 {
-    "name": "tgprofile",
-    "short_name": "tgprofile",
+    "name": "TgProfile",
+    "short_name": "TGProfile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -2,13 +2,10 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,16 +24,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Sizer(
-      builder: (contet, orient, deviceType) {
-        return MaterialApp(
+    return MaterialApp(
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
           home: MyHomePage(),
         );
-      },
-    );
   }
 }
 
@@ -100,9 +93,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: CircleAvatar(backgroundImage: bt, radius: 35),
       ));
     }
-    if (data["description"] != null) {
-      desc = data["description"];
-    }
 
     if (data["name"] != null) {
       String name = data["name"];
@@ -112,14 +102,17 @@ class _MyHomePageState extends State<MyHomePage> {
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
       ];
-      desc = data["description"];
-      cchld.add(Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Text(desc, maxLines: 10),
-      ));
+      if (data["description"] != null) {
+        desc = data["description"];
+        cchld.add(Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(desc, maxLines: 10),
+        ));
+      }
+
       MChilds.add(Flexible(
         child: Padding(
-          padding: const EdgeInsets.only(left: 18),
+          padding: const EdgeInsets.all(20),
           child: SizedBox(
               width: 300,
               child: Column(
@@ -145,10 +138,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text(
                 "Telegram-Profile",
                 style: GoogleFonts.lobster(
-                    foreground: Paint()
-                      ..shader = ui.Gradient.linear(Offset(0, 0),
-                          Offset(120, 10), [Colors.pink, Colors.pinkAccent]),
-                    fontSize: 40,
+                  color: Colors.pinkAccent,
+                     fontSize: 40,
                     fontWeight: FontWeight.bold),
               ),
             ),
@@ -156,7 +147,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Container(
-          padding: EdgeInsets.all(10),
           alignment: Alignment.topCenter,
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
@@ -165,138 +155,140 @@ class _MyHomePageState extends State<MyHomePage> {
               Colors.blueAccent.shade100
             ]),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-                children: [
-              Card(
-                  color: Colors.white70,
-                  child: Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            "Enter Username:",
-                            style: GoogleFonts.lacquer(
-                              color: Colors.pinkAccent,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15.0),
-                          child: SizedBox(
-                            width: 130,
-                            child: TextField(
-                              decoration: InputDecoration(errorText: errort),
-                              onEditingComplete: getData,
-                              controller: controller,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  )),
-              Padding(
-                padding: const EdgeInsets.only(top: 28),
-                child: RepaintBoundary(
-                  key: _globalKey,
-                  child: Container(
-                    decoration: BoxDecoration(color: Colors.white70,
-                    gradient: kbgg
-                    ),
-                    width: 62.w,
-                    height: 30.h,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                  children: [
+                Card(
+                    color: Colors.white70,
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Card(
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                        child:  Row(
-                             children: MChilds,
+                      padding: EdgeInsets.all(8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Text(
+                              "Enter Username:",
+                              style: GoogleFonts.lacquer(
+                                color: Colors.pinkAccent,
+                                fontSize: 20,
+                              ),
+                            ),
                           ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15.0),
+                            child: SizedBox(
+                              width: 130,
+                              child: TextField(
+                                decoration: InputDecoration(errorText: errort),
+                                onEditingComplete: getData,
+                                controller: controller,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    )),
+                Padding(
+                  padding: const EdgeInsets.only(top: 28),
+                  child: RepaintBoundary(
+                    key: _globalKey,
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.white70,
+                      gradient: kbgg
+                      ),
+                      width: 450,
+                    //  height: 200,
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Card(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child:  Row(
+                               children: MChilds,
+                            ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 18.0),
-                child: Card(
-                  color: Colors.white70,
-                  child: Padding(
-                      padding: EdgeInsets.all(15),
-                      child:Column(
-                    children: [Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Text("1:"),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() => kbgg = pc1);
-                          },
-                          child: Container(
-                            width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: pc1
+                Padding(
+                  padding: const EdgeInsets.only(top: 18.0),
+                  child: Card(
+                    color: Colors.white70,
+                    child: Padding(
+                        padding: EdgeInsets.all(15),
+                        child:Column(
+                      children: [Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Text("1:"),
                           ),
-                        ),)
-                      ],
-                    )],
-                  )),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() => kbgg = pc1);
+                            },
+                            child: Container(
+                              width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: pc1
+                            ),
+                          ),)
+                        ],
+                      )],
+                    )),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 25),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                        onPressed: () async {
-                          RenderRepaintBoundary boundary = _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
-                          ui.Image img = await boundary.toImage(pixelRatio: 3);
-                          ByteData? _ = await img.toByteData(format: ui.ImageByteFormat.png);
-                          Uint8List? da = _?.buffer.asUint8List();
-                          var ele = AnchorElement(href: "data:image/png;base64,${base64Encode(da!)}")
-                          ..download = "Profile.png"
-                            ..click();
+                Padding(
+                  padding: EdgeInsets.only(top: 25),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                          onPressed: () async {
+                            RenderRepaintBoundary boundary = _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
+                            ui.Image img = await boundary.toImage();
+                            ByteData? _ = await img.toByteData(format: ui.ImageByteFormat.png);
+                            Uint8List? da = _?.buffer.asUint8List();
+                            AnchorElement(href: "data:image/png;base64,${base64Encode(da!)}")
+                            ..download = "Profile.png"
+                              ..click();
 
 ;                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.indigo.shade500
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.indigo.shade500
 
-                        ),
-                        icon: const Icon(Icons.arrow_right),
-                        label: const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: Text(
-                            "Export",
-                            style: TextStyle(fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70),
                           ),
-                        )),
-                  ],
-                ),
-              )
-            ]),
+                          icon: const Icon(Icons.arrow_right),
+                          label: const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text(
+                              "Export",
+                              style: TextStyle(fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70),
+                            ),
+                          )),
+                    ],
+                  ),
+                )
+              ]),
+            ),
           )),
       bottomNavigationBar: PreferredSize(
-        preferredSize: Size.fromHeight(20),
+        preferredSize: const Size.fromHeight(10),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: InkWell(
             onTap: () async {
-              await launchUrlString("https://github.com/New-dev0/Tg-Profile");
+              await launchUrlString("https://github.com/New-dev0/TgProfile");
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

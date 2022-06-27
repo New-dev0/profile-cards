@@ -15,7 +15,6 @@ jobs:
       - run: |
          flutter pub get
          flutter build web --release
-         cd build/web
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

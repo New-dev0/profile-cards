@@ -9,4 +9,6 @@ A Telegram Profile template generater, made in Flutter.
 [#1](https://imgwhale.xyz/2l6221l4wb9hd7)[..](https://github.com/flutter/flutter/issues/75316)
 
 ## Todo
+- TgProfile to Template Generator.
+- GitHub Repo/User-profile
 - More Customisation

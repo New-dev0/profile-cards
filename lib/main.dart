@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (data["name"] != null) {
-      String name = data["name"];
+      String name = utf8.decode(data["name"].runes.toList());
       List<Widget> cchld = [
         Text(
           name,
@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ];
       if (data["description"] != null) {
-        desc = data["description"];
+        desc = utf8.decode(data["description"].runes.toList());
         cchld.add(Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(desc, maxLines: 10),

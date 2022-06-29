@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show utf8;
 import 'dart:html';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (data["name"] != null) {
-      String name = data["name"];
+      String name = utf8.decode(data["name"]);
       List<Widget> cchld = [
         Text(
           name,

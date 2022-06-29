@@ -25,11 +25,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
-          home: MyHomePage(),
-        );
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
   }
 }
 
@@ -41,15 +41,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(text: "telegram");
   GlobalKey _globalKey = new GlobalKey();
-  Gradient? kbgg;
+  dynamic kbgg;
   dynamic data;
-  Uint8List? byt;
-  var pc1 = LinearGradient(
-    colors: [
-      Colors.pinkAccent,
-      Colors.blueAccent
-    ]
-  );
+  List<dynamic> Themes = [
+    <Color>[Colors.pinkAccent, Colors.blueAccent],
+    [Color(0xffff0f7b), Color(0xfff89b29)],
+    [Color(0xffe81cff), Color(0xff45caff)],
+    [Color(0xffef745c), Color(0xff34073d)],
+    Colors.lime,
+    Colors.indigoAccent,
+  ];
   String desc = "";
   String? errort;
 
@@ -57,18 +58,44 @@ class _MyHomePageState extends State<MyHomePage> {
     if (controller.text == "") {
       return;
     }
-    http.post(Uri.parse("${MetaAPI}?username=${controller.text}"))
-        .then((value) => {
-          setState(() => data = jsonDecode(value.body)),
-    if (data["photo"] != null) {
-      http.get(Uri.parse(data["photo"])).then((value) => {
-        setState(() => byt = value.bodyBytes)})
-    }});}
+    http
+        .post(Uri.parse("${MetaAPI}?username=${controller.text}"))
+        .then((value) => {setState(() => data = jsonDecode(value.body))});
+  }
 
   @override
   void initState() {
     super.initState();
     getData();
+  }
+
+  List<Widget> themeBox() {
+    return Themes.map((e) {
+      Gradient? gr;
+      Color? col;
+      if (e is List<Color>) {
+        gr = LinearGradient(colors: e);
+      } else {
+        col = e;
+      }
+      return GestureDetector(
+        onTap: () {
+          setState(() => kbgg = gr != null ? gr : col);
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.black87, width: 0.2),
+                borderRadius: BorderRadius.circular(5),
+                gradient: gr,
+                color: col),
+          ),
+        ),
+      );
+    }).toList();
   }
 
   @override
@@ -80,16 +107,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (data["_"] != null) {
       errort = "User Not Found!";
-    }
-    else if (errort != null && data["name"] != null) {
-        errort = null;
+    } else if (errort != null && data["name"] != null) {
+      errort = null;
     }
 
-
-    if (byt != null) {
-      var bt = MemoryImage(byt!);
+    if (data["photo"] != null) {
+      var img = data["photo"];
+      var bt = NetworkImage(img);
       MChilds.add(Padding(
-        padding: const EdgeInsets.only(left: 18.0),
+        padding: const EdgeInsets.only(left: 18.0, top: 25, bottom: 25),
         child: CircleAvatar(backgroundImage: bt, radius: 35),
       ));
     }
@@ -114,16 +140,23 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: SizedBox(
-              width: 300,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: cchld,
-              ),
+            width: 300,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: cchld,
+            ),
           ),
         ),
       ));
     }
+    List<Widget> PrimCol = [
+      Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: Text("1:"),
+      ),
+    ];
+    PrimCol.addAll(themeBox());
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100),
@@ -138,8 +171,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text(
                 "Telegram-Profile",
                 style: GoogleFonts.lobster(
-                  color: Colors.pinkAccent,
-                     fontSize: 40,
+                    color: Colors.pinkAccent,
+                    fontSize: 40,
                     fontWeight: FontWeight.bold),
               ),
             ),
@@ -147,19 +180,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Container(
-          alignment: Alignment.topCenter,
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              // Colors.greenAccent,
-              Colors.pinkAccent.shade100,
-              Colors.blueAccent.shade100
-            ]),
-          ),
+              gradient: LinearGradient(
+            colors: [Colors.pinkAccent.shade100, Colors.blueAccent.shade100],
+          )),
+          alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Column(
-                  children: [
+              child: Column(children: [
                 Card(
                     color: Colors.white70,
                     child: Padding(
@@ -196,20 +225,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: RepaintBoundary(
                     key: _globalKey,
                     child: Container(
-                      decoration: BoxDecoration(color: Colors.white70,
-                      gradient: kbgg
+                      decoration: BoxDecoration(
+                        color: kbgg is Color ? kbgg : Colors.white70,
+                        gradient: kbgg is Gradient ? kbgg : null,
                       ),
                       width: 450,
-                    //  height: 200,
+                      //  height: 200,
                       child: Padding(
                         padding: const EdgeInsets.all(18),
                         child: Card(
                           color: Colors.white,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child:  Row(
-                               children: MChilds,
-                            ),
+                          child: Row(
+                            children: MChilds,
+                          ),
                         ),
                       ),
                     ),
@@ -221,29 +251,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Colors.white70,
                     child: Padding(
                         padding: EdgeInsets.all(15),
-                        child:Column(
-                      children: [Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Text("1:"),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() => kbgg = pc1);
-                            },
-                            child: Container(
-                              width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              gradient: pc1
-                            ),
-                          ),)
-                        ],
-                      )],
-                    )),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: PrimCol,
+                            )
+                          ],
+                        )),
                   ),
                 ),
                 Padding(
@@ -253,27 +268,32 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       ElevatedButton.icon(
                           onPressed: () async {
-                            RenderRepaintBoundary boundary = _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
+                            RenderRepaintBoundary boundary =
+                                _globalKey.currentContext?.findRenderObject()
+                                    as RenderRepaintBoundary;
                             ui.Image img = await boundary.toImage();
-                            ByteData? _ = await img.toByteData(format: ui.ImageByteFormat.png);
+                            ByteData? _ = await img.toByteData(
+                                format: ui.ImageByteFormat.png);
                             Uint8List? da = _?.buffer.asUint8List();
-                            AnchorElement(href: "data:image/png;base64,${base64Encode(da!)}")
-                            ..download = "Profile.png"
+                            AnchorElement(
+                                href:
+                                    "data:image/png;base64,${base64Encode(da!)}")
+                              ..download = "Profile.png"
                               ..click();
 
-;                        },
+                            ;
+                          },
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.indigo.shade500
-
-                          ),
+                              primary: Colors.indigo.shade500),
                           icon: const Icon(Icons.arrow_right),
                           label: const Padding(
                             padding: EdgeInsets.all(12.0),
                             child: Text(
                               "Export",
-                              style: TextStyle(fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white70),
                             ),
                           )),
                     ],
@@ -285,7 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: PreferredSize(
         preferredSize: const Size.fromHeight(10),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 13.0),
           child: InkWell(
             onTap: () async {
               await launchUrlString("https://github.com/New-dev0/TgProfile");

@@ -11,6 +11,7 @@ import 'package:url_strategy/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bordered_text/bordered_text.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 String MetaAPI = "https://tgtemp.vercel.app/";
 
@@ -47,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
     <Color>[Colors.pinkAccent, Colors.blueAccent],
     [Color(0xffff0f7b), Color(0xfff89b29)],
     [Color(0xffe81cff), Color(0xff45caff)],
-    [Color(0xffef745c), Color(0xff34073d)],
+    [Color(0xffef745c), Color(0xff6281a1)],
     Colors.lime,
     Colors.indigoAccent,
   ];
@@ -80,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       return GestureDetector(
         onTap: () {
-          setState(() => kbgg = gr != null ? gr : col);
+          setState(() => kbgg = gr ?? col);
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 12),
@@ -157,21 +158,60 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ];
     PrimCol.addAll(themeBox());
+    PrimCol.add(Padding(
+      padding: EdgeInsets.only(left: 12),
+      child: TextButton(
+        style: TextButton.styleFrom(backgroundColor: Colors.white70),
+        child: Text("More"),
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (_) {
+                return AlertDialog(
+                  content: SingleChildScrollView(
+                    child: ColorPicker(
+                      pickerColor: kbgg is Color ? kbgg : Colors.white70,
+                      onColorChanged: (Color value) {
+                        setState(() => kbgg = value);
+                      },
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text("SELECT"))
+                  ],
+                );
+              });
+        },
+      ),
+    ));
+    List<dynamic> s_icons = [
+      Icon(
+        Icons.telegram,
+        size: 40,
+        color: Colors.blue.shade700,
+      ),
+      ImageIcon(NetworkImage("https://cdn.onlinewebfonts.com/svg/img_415633.png"))
+    ];
+    dynamic dropvalue = s_icons[0];
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100),
         child: Container(
           alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(color: Colors.greenAccent.shade200),
+          decoration: BoxDecoration(color: Color(0xff45818e)),
           child: Padding(
             padding: const EdgeInsets.only(left: 28, top: 20, bottom: 20),
             child: BorderedText(
-              strokeColor: Colors.white54,
+              strokeColor: Colors.black87,
               strokeWidth: 5,
               child: Text(
                 "Telegram-Profile",
                 style: GoogleFonts.lobster(
-                    color: Colors.pinkAccent,
+                    color: Colors.white,
                     fontSize: 40,
                     fontWeight: FontWeight.bold),
               ),
@@ -180,46 +220,46 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-            colors: [Colors.pinkAccent.shade100, Colors.blueAccent.shade100],
-          )),
+          decoration: BoxDecoration(color: Color(0xffd0e0e3)),
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(50.0),
               child: Column(children: [
-                Card(
-                    color: Colors.white70,
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Text(
-                              "Enter Username:",
-                              style: GoogleFonts.lacquer(
-                                color: Colors.pinkAccent,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0),
-                            child: SizedBox(
-                              width: 130,
-                              child: TextField(
-                                decoration: InputDecoration(errorText: errort),
-                                onEditingComplete: getData,
-                                controller: controller,
-                              ),
-                            ),
-                          )
-                        ],
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 13.0),
+                        child: DropdownButton<dynamic>(
+                          elevation: 0,
+                          value: dropvalue,
+                          dropdownColor: Colors.white70,
+                          iconSize: 0,
+                          items: s_icons
+                              .map((e) =>
+                                  DropdownMenuItem<dynamic>(value: e, child: e))
+                              .toList(),
+                          onChanged: (_) {
+                             dropvalue = _;
+                          },
+                        ),
                       ),
-                    )),
+                      SizedBox(
+                        width: 130,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                              errorText: errort, hintText: "Enter Username"),
+                          onEditingComplete: getData,
+                          controller: controller,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 28),
                   child: RepaintBoundary(
@@ -247,19 +287,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 18.0),
-                  child: Card(
-                    color: Colors.white70,
-                    child: Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: PrimCol,
-                            )
-                          ],
-                        )),
-                  ),
+                  child: Padding(
+                      padding: EdgeInsets.all(15),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: PrimCol,
+                          )
+                        ],
+                      )),
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 25),

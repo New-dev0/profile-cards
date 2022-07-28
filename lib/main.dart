@@ -48,7 +48,6 @@ class _MyHomePageState extends State<MyHomePage> {
     <Color>[Colors.pinkAccent, Colors.blueAccent],
     [Color(0xffff0f7b), Color(0xfff89b29)],
     [Color(0xffe81cff), Color(0xff45caff)],
-    [Color(0xffef745c), Color(0xff6281a1)],
     Colors.lime,
     Colors.indigoAccent,
   ];
@@ -194,9 +193,11 @@ class _MyHomePageState extends State<MyHomePage> {
         size: 40,
         color: Colors.blue.shade700,
       ),
-      ImageIcon(NetworkImage("https://cdn.onlinewebfonts.com/svg/img_415633.png"))
+      ImageIcon(
+          NetworkImage("https://cdn.onlinewebfonts.com/svg/img_415633.png"))
     ];
     dynamic dropvalue = s_icons[0];
+    double cardopacity = 1;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100),
@@ -224,7 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(50.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(children: [
                 Padding(
                   padding: EdgeInsets.all(8),
@@ -243,7 +244,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   DropdownMenuItem<dynamic>(value: e, child: e))
                               .toList(),
                           onChanged: (_) {
-                             dropvalue = _;
+                            dropvalue = _;
                           },
                         ),
                       ),
@@ -273,12 +274,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       //  height: 200,
                       child: Padding(
                         padding: const EdgeInsets.all(18),
-                        child: Card(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          child: Row(
-                            children: MChilds,
+                        child: Opacity(
+                          opacity: cardopacity,
+                          child: Card(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                            child: Row(
+                              children: MChilds,
+                            ),
                           ),
                         ),
                       ),

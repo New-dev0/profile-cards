@@ -10,7 +10,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bordered_text/bordered_text.dart';
-import 'package:sizer/sizer.dart';
+import 'package:image/image.dart' as ip;
+
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 String MetaAPI = "https://tgtemp.vercel.app/";
@@ -42,6 +43,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(text: "telegram");
   GlobalKey _globalKey = new GlobalKey();
+  Uint8List? pfp;
   dynamic kbgg;
   dynamic data;
   List<dynamic> Themes = [
@@ -60,7 +62,15 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     http
         .post(Uri.parse("${MetaAPI}?username=${controller.text}"))
-        .then((value) => {setState(() => data = jsonDecode(value.body))});
+        .then((value) => {
+              setState(() => data = jsonDecode(value.body)),
+              if (data["photo"] != null)
+                {
+                  http
+                      .get(Uri.parse(data["photo"]))
+                      .then((value) => pfp = value.bodyBytes)
+                }
+            });
   }
 
   @override
@@ -112,11 +122,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (data["photo"] != null) {
-      var img = data["photo"];
-      var bt = NetworkImage(img);
       MChilds.add(Padding(
         padding: const EdgeInsets.only(left: 18.0, top: 25, bottom: 25),
-        child: CircleAvatar(backgroundImage: bt, radius: 35),
+        child: CircleAvatar(
+            backgroundImage: NetworkImage(data["photo"]), radius: 35),
       ));
     }
 
@@ -210,7 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
               strokeColor: Colors.black87,
               strokeWidth: 5,
               child: Text(
-                "Telegram-Profile",
+                "Template-Profile",
                 style: GoogleFonts.lobster(
                     color: Colors.white,
                     fontSize: 40,
@@ -274,15 +283,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       //  height: 200,
                       child: Padding(
                         padding: const EdgeInsets.all(18),
-                        child: Opacity(
-                          opacity: cardopacity,
-                          child: Card(
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15)),
-                            child: Row(
-                              children: MChilds,
-                            ),
+                        child: Card(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child: Row(
+                            children: MChilds,
                           ),
                         ),
                       ),
@@ -303,7 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       )),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 25),
+                  padding: const EdgeInsets.only(top: 25),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -316,13 +322,21 @@ class _MyHomePageState extends State<MyHomePage> {
                             ByteData? _ = await img.toByteData(
                                 format: ui.ImageByteFormat.png);
                             Uint8List? da = _?.buffer.asUint8List();
+                            if (pfp != null) {
+                              ip.Image? dimg = ip.decodePng(da!);
+                              ip.Image? pfpn = ip.decodeImage(pfp!);
+                              ip.Image cropp = ip.copyCropCircle(pfpn!);
+                              ip.Image res =
+                                  ip.copyResize(cropp, width: 70, height: 70);
+                              ip.Image newp =
+                                  ip.copyInto(dimg!, res, dstX: 40, dstY: 46);
+                              da = ip.encodePng(newp) as Uint8List;
+                            }
                             AnchorElement(
                                 href:
                                     "data:image/png;base64,${base64Encode(da!)}")
                               ..download = "Profile.png"
                               ..click();
-
-                            ;
                           },
                           style: ElevatedButton.styleFrom(
                               primary: Colors.indigo.shade500),

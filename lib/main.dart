@@ -222,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(100),
                       child: Image.network(
                         data["photo"],
-                        width: MediaQuery.of(context).size.height / 4,
+                        width: 200 //MediaQuery.of(context).size.height / 4,
                       )),
                 )
               ],

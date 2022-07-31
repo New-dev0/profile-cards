@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
   String desc = "";
   String? errort;
+  bool? _expand = false;
   dynamic dropvalue;
   late List<dynamic> s_icons;
   Icon tgicon = Icon(
@@ -145,6 +146,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
+  String tryDecode(String data) {
+    try {
+      return utf8.decode(data.runes.toList());
+    } catch (e) {
+      return data;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (data == null) {
@@ -153,50 +162,92 @@ class _MyHomePageState extends State<MyHomePage> {
               LoadingAnimationWidget.beat(color: Colors.tealAccent, size: 100));
     }
     List<Widget> MChilds = [];
-
     if (data["_"] != null) {
       errort = "User Not Found!";
     } else if (errort != null && data["name"] != null) {
       errort = null;
     }
-
-    if (data["photo"] != null) {
-      MChilds.add(Padding(
-        padding: const EdgeInsets.only(left: 18.0, top: 25, bottom: 25),
-        child: CircleAvatar(
-            backgroundImage: NetworkImage(data["photo"]), radius: 35),
-      ));
-    }
-
-    if (data["name"] != null) {
-      String name = utf8.decode(data["name"].runes.toList());
-      List<Widget> cchld = [
-        Text(
-          name,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ),
-      ];
-      if (data["description"] != null) {
-        desc = utf8.decode(data["description"].runes.toList());
-        cchld.add(Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(desc, maxLines: 10),
+    if (_expand == false) {
+      if (data["photo"] != null) {
+        MChilds.add(Padding(
+          padding: const EdgeInsets.only(left: 18.0, top: 25, bottom: 25),
+          child: CircleAvatar(
+              backgroundImage: NetworkImage(data["photo"]), radius: 35),
         ));
       }
 
-      MChilds.add(Flexible(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: SizedBox(
-            width: 300,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: cchld,
+      if (data["name"] != null) {
+        String name = tryDecode(data["name"]);
+        List<Widget> cchld = [
+          Text(
+            name,
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            maxLines: 1,
+          ),
+        ];
+        if (data["description"] != null) {
+          desc = tryDecode(data["description"]);
+          cchld.add(Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(desc, maxLines: 10),
+          ));
+        }
+
+        MChilds.add(Flexible(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: 450,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: cchld,
+              ),
             ),
           ),
-        ),
-      ));
+        ));
+      }
+    } else {
+      if (data["photo"] != null) {
+        MChilds.addAll([
+          Padding(
+            padding: const EdgeInsets.only(top: 18.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: Image.network(
+                        data["photo"],
+                        width: MediaQuery.of(context).size.height / 4,
+                      )),
+                )
+              ],
+            ),
+          ),
+          Padding(padding: EdgeInsets.only(top: 20)),
+        ]);
+        if (data["name"] != null) {
+          MChilds.add(Text(
+            tryDecode(data["name"]),
+            style: TextStyle(fontSize: 25),
+          ));
+        }
+        if (data["description"] != null) {
+          MChilds.add(Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: SizedBox(
+                width: 350,
+                child: Text(
+                  tryDecode(data["description"]),
+                  style: TextStyle(color: Colors.black87),
+                )),
+          ));
+        }
+      }
     }
     List<Widget> PrimCol = [
       Padding(
@@ -285,15 +336,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       SizedBox(
-                        width: 130,
+                        width: 270,
                         child: TextField(
                           autofocus: true,
-                          style: TextStyle(
-                            fontSize: 20
-                          ),
+                          style: TextStyle(fontSize: 20),
                           textAlign: TextAlign.center,
                           decoration: InputDecoration(
-
                               errorText: errort, hintText: "Enter Username"),
                           onEditingComplete: getData,
                           controller: controller,
@@ -311,17 +359,22 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: kbgg is Color ? kbgg : Colors.white70,
                         gradient: kbgg is Gradient ? kbgg : null,
                       ),
-                      width: 650,
+                      width: 550,
                       child: Padding(
                         padding: const EdgeInsets.all(30),
                         child: Card(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          child: Row(
-                            children: MChilds,
-                          ),
-                        ),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                            child: Flexible(
+                              child: !_expand!
+                                  ? Row(
+                                      children: MChilds,
+                                    )
+                                  : Padding(
+                                      padding: EdgeInsets.all(5),
+                                      child: Column(children: MChilds)),
+                            )),
                       ),
                     ),
                   ),
@@ -335,7 +388,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: PrimCol,
-                          )
+                          ),
+                          Padding(padding: EdgeInsets.only(top: 15)),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Expand Mode:"),
+                              Checkbox(
+                                  value: _expand,
+                                  onChanged: (bool? value) {
+                                    setState(() => _expand = value);
+                                  })
+                            ],
+                          ),
                         ],
                       )),
                 ),
@@ -358,11 +423,19 @@ class _MyHomePageState extends State<MyHomePage> {
                               ip.Image? pfpn = ip.decodeImage(pfp!);
                               ip.Image cropp = ip.copyCropCircle(pfpn!);
                               ip.Image res =
-                                  ip.copyResize(cropp, width: 70, height: 70);
+                                  ip.copyResize(cropp, width: 71, height: 71);
                               ip.Image newp =
-                                  ip.copyInto(dimg!, res, dstX: 40, dstY: 46);
+                                  ip.copyInto(dimg!, res, dstX: 51, dstY: 58);
                               da = ip.encodePng(newp) as Uint8List;
                             }
+                            // await showDialog(
+                            //     context: context,
+                            //     builder: (_) {
+                            //       return AlertDialog(
+                            //         content: Image.memory(da!),
+                            //       );
+                            //     });
+                            // return;
                             AnchorElement(
                                 href:
                                     "data:image/png;base64,${base64Encode(da!)}")

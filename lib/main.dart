@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -44,8 +45,10 @@ class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(text: "telegram");
   GlobalKey _globalKey = new GlobalKey();
   Uint8List? pfp;
+  int cindex = 0;
   dynamic kbgg;
   dynamic data;
+  Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
   List<dynamic> Themes = [
     <Color>[Colors.pinkAccent, Colors.blueAccent],
     [Color(0xffff0f7b), Color(0xfff89b29)],
@@ -55,28 +58,62 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
   String desc = "";
   String? errort;
+  dynamic dropvalue;
+  late List<dynamic> s_icons;
+  Icon tgicon = Icon(
+    Icons.telegram,
+    size: 40,
+    color: Colors.blue.shade700,
+  );
+
+  void _getPhoto() {
+    if (data["photo"] != null) {
+      http.get(Uri.parse(data["photo"])).then((value) => pfp = value.bodyBytes);
+    }
+  }
 
   void getData() {
-    if (controller.text == "") {
+    String text = controller.text;
+    if (text == "") {
       return;
     }
-    http
-        .post(Uri.parse("${MetaAPI}?username=${controller.text}"))
-        .then((value) => {
-              setState(() => data = jsonDecode(value.body)),
-              if (data["photo"] != null)
-                {
-                  http
-                      .get(Uri.parse(data["photo"]))
-                      .then((value) => pfp = value.bodyBytes)
-                }
-            });
+    if (CacheData[cindex]!.containsKey(text)) {
+      setState(() => data = CacheData[cindex]![text]);
+      _getPhoto();
+      return;
+    }
+    ;
+
+    if (cindex == 0) {
+      http.post(Uri.parse("${MetaAPI}?username=${text}")).then((value) => {
+            setState(() => data = jsonDecode(value.body)),
+            CacheData[0]![text] = data,
+            _getPhoto()
+          });
+    } else {
+      http
+          .get(Uri.parse("https://api.github.com/users/${text}"))
+          .then((value) => {
+                setState(() => data = jsonDecode(value.body)),
+                if (data.containsKey("message")) {data["_"] = data["message"]},
+                data["photo"] = data["avatar_url"],
+                data["description"] = data["bio"],
+                if (data["name"] == null) {data["name"] = data["login"]},
+                CacheData[cindex]![text] = data,
+              });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     getData();
+    s_icons = [
+      tgicon,
+      ImageIcon(
+          NetworkImage("https://cdn.onlinewebfonts.com/svg/img_415633.png"))
+    ];
+    dropvalue = tgicon;
   }
 
   List<Widget> themeBox() {
@@ -111,7 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (data == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+          child:
+              LoadingAnimationWidget.beat(color: Colors.tealAccent, size: 100));
     }
     List<Widget> MChilds = [];
 
@@ -196,39 +235,26 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     ));
-    List<dynamic> s_icons = [
-      Icon(
-        Icons.telegram,
-        size: 40,
-        color: Colors.blue.shade700,
-      ),
-      ImageIcon(
-          NetworkImage("https://cdn.onlinewebfonts.com/svg/img_415633.png"))
-    ];
-    dynamic dropvalue = s_icons[0];
-    double cardopacity = 1;
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
-        child: Container(
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(color: Color(0xff45818e)),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 28, top: 20, bottom: 20),
-            child: BorderedText(
-              strokeColor: Colors.black87,
-              strokeWidth: 5,
-              child: Text(
-                "Template-Profile",
-                style: GoogleFonts.lobster(
-                    color: Colors.white,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ),
-      ),
+          preferredSize: Size.fromHeight(100),
+          child: Container(
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(color: Color(0xff50a18e)),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 28, top: 20, bottom: 20),
+                child: BorderedText(
+                  strokeColor: Colors.black87,
+                  strokeWidth: 5,
+                  child: Text(
+                    "Template-Profile",
+                    style: GoogleFonts.lobster(
+                        color: Colors.white,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ))),
       body: Container(
           decoration: BoxDecoration(color: Color(0xffd0e0e3)),
           alignment: Alignment.topCenter,
@@ -253,15 +279,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                   DropdownMenuItem<dynamic>(value: e, child: e))
                               .toList(),
                           onChanged: (_) {
-                            dropvalue = _;
+                            setState(() =>
+                                {dropvalue = _, cindex = s_icons.indexOf(_)});
                           },
                         ),
                       ),
                       SizedBox(
                         width: 130,
                         child: TextField(
+                          autofocus: true,
+                          style: TextStyle(
+                            fontSize: 20
+                          ),
                           textAlign: TextAlign.center,
                           decoration: InputDecoration(
+
                               errorText: errort, hintText: "Enter Username"),
                           onEditingComplete: getData,
                           controller: controller,
@@ -279,10 +311,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: kbgg is Color ? kbgg : Colors.white70,
                         gradient: kbgg is Gradient ? kbgg : null,
                       ),
-                      width: 450,
-                      //  height: 200,
+                      width: 650,
                       child: Padding(
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(30),
                         child: Card(
                           color: Colors.white,
                           shape: RoundedRectangleBorder(
@@ -367,6 +398,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
                   Icons.star_sharp,

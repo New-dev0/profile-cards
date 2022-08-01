@@ -60,8 +60,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Colors.lime,
     Colors.indigoAccent,
   ];
+  double cardopac = 1;
   String desc = "";
   bool highlight_url = false;
+  bool _show_highl = false;
   String? errort;
   bool? _expand = false;
   dynamic dropvalue;
@@ -171,13 +173,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (data["description"] != null) {
       var align = _expand! ? TextAlign.center : TextAlign.start;
       String dec = tryDecode(data["description"]);
+      List<String> urls = getUrlsFromString(dec);
+      if (urls.length != 0) {
+        _show_highl = true;
+      }
       desk = Text(
         dec,
         textAlign: align,
       );
       if (highlight_url) {
-        List<String> urls = getUrlsFromString(dec);
-        if (urls.length != 0) {
+        if (_show_highl) {
           var dchild = <TextSpan>[];
           dec.split(" ").forEach((String element) {
             Color tcolor;
@@ -446,17 +451,20 @@ class _MyHomePageState extends State<MyHomePage> {
                   width: 550,
                   child: Padding(
                     padding: const EdgeInsets.all(30),
-                    child: Card(
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                        child: !_expand!
-                            ? Row(
-                                children: MChilds,
-                              )
-                            : Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Column(children: MChilds))),
+                    child: Opacity(
+                      opacity: cardopac,
+                      child: Card(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child: !_expand!
+                              ? Row(
+                                  children: MChilds,
+                                )
+                              : Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Column(children: MChilds))),
+                    ),
                   ),
                 ),
               ),
@@ -482,16 +490,32 @@ class _MyHomePageState extends State<MyHomePage> {
                                 setState(() => _expand = value);
                               }),
                           Padding(padding: EdgeInsets.only(left: 10)),
-                          Text("Highlight Url:"),
-                          Checkbox(
-                              value: highlight_url,
-                              onChanged: (value) {
-                                setState(() {
-                                  highlight_url = value as bool;
-                                });
-                              })
+                          if (_show_highl) Text("Highlight Url:"),
+                          if (_show_highl)
+                            Checkbox(
+                                value: highlight_url,
+                                onChanged: (value) {
+                                  setState(() {
+                                    highlight_url = value as bool;
+                                  });
+                                })
                         ],
                       ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Card Opacity:"),
+                          Slider(
+                            value: cardopac,
+                            min: 0.6,
+                            onChanged: (double value) {
+                              setState(() {
+                                cardopac = value;
+                              });
+                            },
+                          )
+                        ],
+                      )
                     ],
                   )),
             ),
@@ -505,7 +529,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         RenderRepaintBoundary boundary =
                             _globalKey.currentContext?.findRenderObject()
                                 as RenderRepaintBoundary;
-                        ui.Image img = await boundary.toImage();
+                        late ui.Image img;
+                        try {
+                          img = await boundary.toImage();
+                        } catch (e) {
+                          await showDialog(
+                              context: context,
+                              builder: (_) {
+                                return AlertDialog(
+                                  content: Text(e.toString() +
+                                      "\nTake Screenshot from your device and crop it to get template."),
+                                );
+                              });
+                          return;
+                        }
                         ByteData? _ = await img.toByteData(
                             format: ui.ImageByteFormat.png);
                         Uint8List? da = _?.buffer.asUint8List();
@@ -513,16 +550,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           ip.Image? dimg = ip.decodePng(da!);
                           ip.Image? pfpn = ip.decodeImage(pfp!);
                           ip.Image cropp = ip.copyCropCircle(pfpn!);
+                          int rad = !_expand! ? 71 : 218;
                           ip.Image res =
-                              ip.copyResize(cropp, width: 71, height: 71);
-                          ip.Image newp =
-                              ip.copyInto(dimg!, res, dstX: 51, dstY: 58);
+                              ip.copyResize(cropp, width: rad, height: rad);
+                          ip.Image newp = ip.copyInto(dimg!, res,
+                              dstX: _expand! ? 166 : 51,
+                              dstY: _expand! ? 56 : 58);
                           da = ip.encodePng(newp) as Uint8List;
                         }
                         // await showDialog(
                         //     context: context,
                         //     builder: (_) {
                         //       return AlertDialog(
+                        //         backgroundColor: Colors.tealAccent,
                         //         content: Image.memory(da!),
                         //       );
                         //     });

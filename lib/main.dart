@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
+import 'package:simple_gradient_text/simple_gradient_text.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -220,10 +221,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(8.0),
                   child: ClipRRect(
                       borderRadius: BorderRadius.circular(100),
-                      child: Image.network(
-                        data["photo"],
-                        width: 200 //MediaQuery.of(context).size.height / 4,
-                      )),
+                      child: Image.network(data["photo"],
+                          width: 200 //MediaQuery.of(context).size.height / 4,
+                          )),
                 )
               ],
             ),
@@ -243,6 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: 350,
                 child: Text(
                   tryDecode(data["description"]),
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.black87),
                 )),
           ));
@@ -287,206 +288,212 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ));
     return Scaffold(
+      backgroundColor: Color(0xffd0e0e3),
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: Container(
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(color: Color(0xff50a18e)),
               child: Padding(
-                padding: const EdgeInsets.only(left: 28, top: 20, bottom: 20),
-                child: BorderedText(
-                  strokeColor: Colors.black87,
-                  strokeWidth: 5,
-                  child: Text(
-                    "Template-Profile",
-                    style: GoogleFonts.lobster(
-                        color: Colors.white,
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ))),
-      body: Container(
-          decoration: BoxDecoration(color: Color(0xffd0e0e3)),
-          alignment: Alignment.topCenter,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(children: [
-                Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 13.0),
-                        child: DropdownButton<dynamic>(
-                          elevation: 0,
-                          value: dropvalue,
-                          dropdownColor: Colors.white70,
-                          iconSize: 0,
-                          items: s_icons
-                              .map((e) =>
-                                  DropdownMenuItem<dynamic>(value: e, child: e))
-                              .toList(),
-                          onChanged: (_) {
-                            setState(() =>
-                                {dropvalue = _, cindex = s_icons.indexOf(_)});
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: 270,
-                        child: TextField(
-                          autofocus: true,
-                          style: TextStyle(fontSize: 20),
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                              errorText: errort, hintText: "Enter Username"),
-                          onEditingComplete: getData,
-                          controller: controller,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 28),
-                  child: RepaintBoundary(
-                    key: _globalKey,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: kbgg is Color ? kbgg : Colors.white70,
-                        gradient: kbgg is Gradient ? kbgg : null,
-                      ),
-                      width: 550,
-                      child: Padding(
-                        padding: const EdgeInsets.all(30),
-                        child: Card(
+                padding: const EdgeInsets.only(
+                    left: 28, top: 20, bottom: 20, right: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //    mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BorderedText(
+                      strokeColor: Colors.black87,
+                      strokeWidth: 5,
+                      child: Text(
+                        "Template-Profile",
+                        style: GoogleFonts.lobster(
                             color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15)),
-                            child: Flexible(
-                              child: !_expand!
-                                  ? Row(
-                                      children: MChilds,
-                                    )
-                                  : Padding(
-                                      padding: EdgeInsets.all(5),
-                                      child: Column(children: MChilds)),
-                            )),
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)
+                        
+                      ),
+                      side: BorderSide(
+                          color: Colors.pinkAccent,
+                          width: 0.8,
+                        )
+                      ),
+                      onPressed: () async {
+                        await launchUrlString(
+                            "https://github.com/New-dev0/TgProfile");
+                      },
+                      icon: Icon(
+                        Icons.star_sharp,
+                        color: Colors.pinkAccent,
+                      ),
+                      label: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: GradientText(
+                          "Star Me",
+                          style: GoogleFonts.tauri(fontSize: 15,),
+                          colors: [Colors.red, Colors.pinkAccent],
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 18.0),
-                  child: Padding(
-                      padding: EdgeInsets.all(15),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: PrimCol,
-                          ),
-                          Padding(padding: EdgeInsets.only(top: 15)),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text("Expand Mode:"),
-                              Checkbox(
-                                  value: _expand,
-                                  onChanged: (bool? value) {
-                                    setState(() => _expand = value);
-                                  })
-                            ],
-                          ),
-                        ],
-                      )),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 25),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton.icon(
-                          onPressed: () async {
-                            RenderRepaintBoundary boundary =
-                                _globalKey.currentContext?.findRenderObject()
-                                    as RenderRepaintBoundary;
-                            ui.Image img = await boundary.toImage();
-                            ByteData? _ = await img.toByteData(
-                                format: ui.ImageByteFormat.png);
-                            Uint8List? da = _?.buffer.asUint8List();
-                            if (pfp != null) {
-                              ip.Image? dimg = ip.decodePng(da!);
-                              ip.Image? pfpn = ip.decodeImage(pfp!);
-                              ip.Image cropp = ip.copyCropCircle(pfpn!);
-                              ip.Image res =
-                                  ip.copyResize(cropp, width: 71, height: 71);
-                              ip.Image newp =
-                                  ip.copyInto(dimg!, res, dstX: 51, dstY: 58);
-                              da = ip.encodePng(newp) as Uint8List;
-                            }
-                            // await showDialog(
-                            //     context: context,
-                            //     builder: (_) {
-                            //       return AlertDialog(
-                            //         content: Image.memory(da!),
-                            //       );
-                            //     });
-                            // return;
-                            AnchorElement(
-                                href:
-                                    "data:image/png;base64,${base64Encode(da!)}")
-                              ..download = "Profile.png"
-                              ..click();
-                          },
-                          style: ElevatedButton.styleFrom(
-                              primary: Colors.indigo.shade500),
-                          icon: const Icon(Icons.arrow_right),
-                          label: const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text(
-                              "Export",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white70),
-                            ),
-                          )),
-                    ],
-                  ),
-                )
-              ]),
-            ),
-          )),
-      bottomNavigationBar: PreferredSize(
-        preferredSize: const Size.fromHeight(10),
+              ))),
+      body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 13.0),
-          child: InkWell(
-            onTap: () async {
-              await launchUrlString("https://github.com/New-dev0/TgProfile");
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.star_sharp,
-                  color: Colors.purple,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 7),
-                  child: Text(
-                    "Star me on GitHub",
-                    style: GoogleFonts.acme(fontSize: 18),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 25.0),
+                    child: DropdownButton<dynamic>(
+                      elevation: 0,
+                      value: dropvalue,
+                      dropdownColor: Colors.white70,
+                      iconSize: 0,
+                      items: s_icons
+                          .map((e) =>
+                              DropdownMenuItem<dynamic>(value: e, child: e))
+                          .toList(),
+                      onChanged: (_) {
+                        setState(
+                            () => {dropvalue = _, cindex = s_icons.indexOf(_)});
+                      },
+                    ),
                   ),
-                )
-              ],
+                  SizedBox(
+                    width: 270,
+                    child: TextField(
+                      autofocus: true,
+                      style: TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                          errorText: errort, hintText: "Enter Username"),
+                      onEditingComplete: getData,
+                      controller: controller,
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.only(top: 28),
+              child: RepaintBoundary(
+                key: _globalKey,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: kbgg is Color ? kbgg : Colors.white70,
+                    gradient: kbgg is Gradient ? kbgg : null,
+                  ),
+                  width: 550,
+                  child: Padding(
+                    padding: const EdgeInsets.all(30),
+                    child: Card(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        child: !_expand!
+                            ? Row(
+                                children: MChilds,
+                              )
+                            : Padding(
+                                padding: EdgeInsets.all(5),
+                                child: Column(children: MChilds))),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 18.0),
+              child: Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: PrimCol,
+                      ),
+                      Padding(padding: EdgeInsets.only(top: 15)),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Expand Mode:"),
+                          Checkbox(
+                              value: _expand,
+                              onChanged: (bool? value) {
+                                setState(() => _expand = value);
+                              })
+                        ],
+                      ),
+                    ],
+                  )),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 25),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                      onPressed: () async {
+                        RenderRepaintBoundary boundary =
+                            _globalKey.currentContext?.findRenderObject()
+                                as RenderRepaintBoundary;
+                        ui.Image img = await boundary.toImage();
+                        ByteData? _ = await img.toByteData(
+                            format: ui.ImageByteFormat.png);
+                        Uint8List? da = _?.buffer.asUint8List();
+                        if (pfp != null) {
+                          ip.Image? dimg = ip.decodePng(da!);
+                          ip.Image? pfpn = ip.decodeImage(pfp!);
+                          ip.Image cropp = ip.copyCropCircle(pfpn!);
+                          ip.Image res =
+                              ip.copyResize(cropp, width: 71, height: 71);
+                          ip.Image newp =
+                              ip.copyInto(dimg!, res, dstX: 51, dstY: 58);
+                          da = ip.encodePng(newp) as Uint8List;
+                        }
+                        // await showDialog(
+                        //     context: context,
+                        //     builder: (_) {
+                        //       return AlertDialog(
+                        //         content: Image.memory(da!),
+                        //       );
+                        //     });
+                        // return;
+                        AnchorElement(
+                            href: "data:image/png;base64,${base64Encode(da!)}")
+                          ..download = "Profile.png"
+                          ..click();
+                      },
+                      style: ElevatedButton.styleFrom(
+                          primary: Colors.indigo.shade500),
+                      icon: const Icon(Icons.arrow_right),
+                      label: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          "Export",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70),
+                        ),
+                      )),
+                ],
+              ),
+            ),
+          ]),
         ),
       ),
     );

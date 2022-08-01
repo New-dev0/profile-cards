@@ -50,6 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   GlobalKey _globalKey = new GlobalKey();
   Uint8List? pfp;
   int cindex = 0;
+  double imgradius = 100;
   dynamic kbgg;
   dynamic data;
   Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
@@ -269,7 +270,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ClipRRect(
-                      borderRadius: BorderRadius.circular(100),
+                      borderRadius: BorderRadius.circular(imgradius),
                       child: Image.network(data["photo"],
                           width: 200 //MediaQuery.of(context).size.height / 4,
                           )),
@@ -515,7 +516,23 @@ class _MyHomePageState extends State<MyHomePage> {
                             },
                           )
                         ],
-                      )
+                      ),
+                      if (_expand!)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Image Radius:"),
+                            Slider(
+                                value: imgradius,
+                                min: 50,
+                                max: 120,
+                                onChanged: (_) {
+                                  setState(() {
+                                    imgradius = _;
+                                  });
+                                })
+                          ],
+                        )
                     ],
                   )),
             ),

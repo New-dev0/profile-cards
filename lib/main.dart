@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:html';
+import 'package:flutter/gestures.dart';
+
+import 'helpers.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -58,6 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Colors.indigoAccent,
   ];
   String desc = "";
+  bool highlight_url = false;
   String? errort;
   bool? _expand = false;
   dynamic dropvalue;
@@ -163,6 +167,46 @@ class _MyHomePageState extends State<MyHomePage> {
               LoadingAnimationWidget.beat(color: Colors.tealAccent, size: 100));
     }
     List<Widget> MChilds = [];
+    Widget? desk;
+    if (data["description"] != null) {
+      var align = _expand! ? TextAlign.center : TextAlign.start;
+      String dec = tryDecode(data["description"]);
+      desk = Text(
+        dec,
+        textAlign: align,
+      );
+      if (highlight_url) {
+        List<String> urls = getUrlsFromString(dec);
+        if (urls.length != 0) {
+          var dchild = <TextSpan>[];
+          dec.split(" ").forEach((String element) {
+            Color tcolor;
+            GestureRecognizer? gr;
+            if (urls.contains(element)) {
+              var te =
+                  element.startsWith("http") ? element : "https://" + element;
+              tcolor = Colors.blueAccent.shade200;
+              gr = TapGestureRecognizer()
+                ..onTap = () async {
+                  await launchUrlString(te.trim());
+                };
+            } else {
+              tcolor = Colors.black87;
+            }
+            dchild.add(TextSpan(
+                text: "$element ",
+                recognizer: gr,
+                style: TextStyle(
+                  color: tcolor,
+                )));
+          });
+          desk = RichText(
+            text: TextSpan(children: dchild),
+            textAlign: align,
+          );
+        }
+      }
+    }
     if (data["_"] != null) {
       errort = "User Not Found!";
     } else if (errort != null && data["name"] != null) {
@@ -186,11 +230,11 @@ class _MyHomePageState extends State<MyHomePage> {
             maxLines: 1,
           ),
         ];
-        if (data["description"] != null) {
-          desc = tryDecode(data["description"]);
+        if (desk != null) {
+          //   desc = tryDecode(data["description"]);
           cchld.add(Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(desc, maxLines: 10),
+            child: desk,
           ));
         }
 
@@ -236,17 +280,19 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(fontSize: 25),
           ));
         }
-        if (data["description"] != null) {
+        if (desk != null) {
           MChilds.add(Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: SizedBox(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: SizedBox(
                 width: 350,
-                child: Text(
+                child:
+                    desk /*Text(
                   tryDecode(data["description"]),
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.black87),
-                )),
-          ));
+                ))*/
+                ,
+              )));
         }
       }
     }
@@ -287,70 +333,70 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     ));
+    var size = MediaQuery.of(context).size;
+    double fontsize = size.width < 500 ? 32 : 40;
     return Scaffold(
       backgroundColor: Color(0xffd0e0e3),
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: Container(
-              alignment: Alignment.centerLeft,
-              decoration: BoxDecoration(color: Color(0xff50a18e)),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 28, top: 20, bottom: 20, right: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //    mainAxisSize: MainAxisSize.min,
-                  children: [
-                    BorderedText(
-                      strokeColor: Colors.black87,
-                      strokeWidth: 5,
-                      child: Text(
-                        "Template-Profile",
-                        style: GoogleFonts.lobster(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold),
-                      ),
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(color: Color(0xff50a18e)),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  left: 20, top: 20, bottom: 20, right: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //    mainAxisSize: MainAxisSize.min,
+                children: [
+                  BorderedText(
+                    strokeColor: Colors.black87,
+                    strokeWidth: 5,
+                    child: Text(
+                      "Template-Profile",
+                      style: GoogleFonts.lobster(
+                          color: Colors.white,
+                          fontSize: fontsize,
+                          fontWeight: FontWeight.bold),
                     ),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)
-                        
-                      ),
-                      side: BorderSide(
+                  ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        side: BorderSide(
                           color: Colors.pinkAccent,
                           width: 0.8,
-                        )
-                      ),
-                      onPressed: () async {
-                        await launchUrlString(
-                            "https://github.com/New-dev0/TgProfile");
-                      },
-                      icon: Icon(
-                        Icons.star_sharp,
-                        color: Colors.pinkAccent,
-                      ),
-                      label: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: GradientText(
-                          "Star Me",
-                          style: GoogleFonts.tauri(fontSize: 15,),
-                          colors: [Colors.red, Colors.pinkAccent],
+                        )),
+                    onPressed: () async {
+                      await launchUrlString(
+                          "https://github.com/New-dev0/TgProfile");
+                    },
+                    icon: Icon(
+                      Icons.star_sharp,
+                      color: Colors.pinkAccent,
+                    ),
+                    label: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: GradientText(
+                        "Star Me",
+                        style: GoogleFonts.tauri(
+                          fontSize: size.width < 500 ? 12 : 15,
                         ),
+                        colors: [Colors.red, Colors.pinkAccent],
                       ),
-                    )
-                  ],
-                ),
-              ))),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          )),
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Padding(
               padding: EdgeInsets.all(8),
               child: Row(
@@ -434,6 +480,15 @@ class _MyHomePageState extends State<MyHomePage> {
                               value: _expand,
                               onChanged: (bool? value) {
                                 setState(() => _expand = value);
+                              }),
+                          Padding(padding: EdgeInsets.only(left: 10)),
+                          Text("Highlight Url:"),
+                          Checkbox(
+                              value: highlight_url,
+                              onChanged: (value) {
+                                setState(() {
+                                  highlight_url = value as bool;
+                                });
                               })
                         ],
                       ),

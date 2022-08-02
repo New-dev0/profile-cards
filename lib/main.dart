@@ -563,7 +563,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         ByteData? _ = await img.toByteData(
                             format: ui.ImageByteFormat.png);
                         Uint8List? da = _?.buffer.asUint8List();
-                        if (pfp != null) {
+                        if (pfp != null &&
+                            !window.navigator.userAgent
+                                .toLowerCase()
+                                .contains(RegExp("iphone|ipad"))) {
                           ip.Image? dimg = ip.decodePng(da!);
                           ip.Image? pfpn = ip.decodeImage(pfp!);
                           ip.Image cropp = ip.copyCropCircle(pfpn!);

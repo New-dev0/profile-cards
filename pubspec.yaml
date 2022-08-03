@@ -41,7 +41,6 @@ dependencies:
   sizer: ^2.0.15
   url_launcher: ^6.1.4
   flutter_colorpicker: ^1.0.3
-  image: ^3.2.0
   loading_animation_widget: ^1.2.0+2
   simple_gradient_text: ^1.2.3
 

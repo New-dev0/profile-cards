@@ -13,10 +13,6 @@ import 'package:http/http.dart' as http;
 import 'appbar.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:bordered_text/bordered_text.dart';
-import 'package:image/image.dart' as ip;
-
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 String MetaAPI = "https://tgtemp.vercel.app/";
@@ -51,7 +47,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(
       text: Uri.base.queryParameters["query"] ?? "telegram");
-  GlobalKey _globalKey = new GlobalKey();
+  GlobalKey _globalKey = GlobalKey();
   Uint8List? pfp;
   int cindex = 0;
   double imgradius = 100;
@@ -61,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
   List<dynamic> Themes = [
     <Color>[Colors.pinkAccent, Colors.blueAccent],
-    [Color(0xffff0f7b), Color(0xfff89b29)],
+     [Color(0xffff0f7b), Color(0xfff89b29)],
     [Color(0xffe81cff), Color(0xff45caff)],
     [Colors.teal, Colors.green],
     Colors.indigoAccent,
@@ -86,6 +82,71 @@ class _MyHomePageState extends State<MyHomePage> {
     if (data["photo"] != null) {
       http.get(Uri.parse(data["photo"])).then((value) => pfp = value.bodyBytes);
     }
+  }
+
+  void download_image({url : false}) async {
+    RenderRepaintBoundary boundary =
+        _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
+    late ui.Image img;
+    try {
+      img = await boundary.toImage();
+    } catch (e) {
+      await showDialog(
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              content: Text(e.toString() +
+                  "\nTake Screenshot from your device and crop it to get template."),
+            );
+          });
+      return;
+    }
+    ByteData? _ = await img.toByteData(format: ui.ImageByteFormat.png);
+    Uint8List? da = _?.buffer.asUint8List();
+    if (url) {
+      await showDialog(context: context, builder: (_) {
+        return AlertDialog(
+          content: Text("Not Implemented."),
+        );
+      });
+      return;
+      var request = http.MultipartRequest('GET', Uri.parse('https://imgwhale.xyz/new'));
+      request.files.add(http.MultipartFile.fromBytes("files", da!,));
+      var res = await request.send();
+      var dta = jsonDecode(await res.stream.bytesToString());
+//      await launchUrlString();
+      return;
+    }
+    // if (pfp != null &&
+    // !window.navigator.userAgent
+    //   .toLowerCase()
+    // .contains(RegExp("iphone|ipad"))) {
+    // ip.Image? dimg = ip.decodePng(da!);
+    // ip.Image? pfpn = ip.decodeImage(pfp!);
+    // ip.Image cropp = ip.copyCropCircle(pfpn!);
+    // int rad = !_expand! ? 71 : 218;
+    // ip.Image res =
+    //   ip.copyResize(cropp, width: rad, height: rad);
+    // ip.Image newp = ip.copyInto(dimg!, res,
+    //    dstX: _expand! ? 166 : 51,
+    //    dstY: _expand! ? 56 : 58);
+    //da = ip.encodePng(newp) as Uint8List;
+    //  }
+
+    if (!kReleaseMode) {
+      await showDialog(
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              backgroundColor: Colors.tealAccent,
+              content: Image.memory(da!),
+            );
+          });
+      return null;
+    }
+    AnchorElement(href: "data:image/png;base64,${base64Encode(da!)}")
+      ..download = "${controller.text}-profile.png"
+      ..click();
   }
 
   void getData() {
@@ -180,8 +241,10 @@ class _MyHomePageState extends State<MyHomePage> {
             child: LoadingAnimationWidget.beat(color: Colors.teal, size: 100)),
       );
     }
+    var size = MediaQuery.of(context).size;
+    double fontsize = size.width < 500 ? 32 : 40;
     List<Widget> MChilds = [];
-    Color textcol = _dark ? Colors.white : Colors.black;
+    Color textcol = _dark ? Colors.white70 : Colors.black;
     Widget? desk;
 
     if (data["description"] != null) {
@@ -249,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                 name,
                 style: TextStyle(
-                    fontSize: 32, fontWeight: FontWeight.bold, color: textcol),
+                    fontSize: 28, fontWeight: FontWeight.bold, color: textcol),
                 maxLines: 1,
               ),
               if (_show_prem)
@@ -273,7 +336,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         MChilds.add(Flexible(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             child: SizedBox(
               width: 450,
               child: Column(
@@ -286,7 +349,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
       }
     } else {
-      print(data);
       if (data["photo"] != null) {
         MChilds.addAll([
           Padding(
@@ -369,8 +431,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     ));
-    var size = MediaQuery.of(context).size;
-    double fontsize = size.width < 500 ? 32 : 40;
+
     return Scaffold(
       backgroundColor: Color(0xffd0e0e3),
       appBar: CustomAppBar(fontsize, size),
@@ -404,12 +465,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   SizedBox(
                     width: 270,
                     child: TextField(
-                      autofocus: true,
+                      autofocus: _autofocus,
                       style: TextStyle(fontSize: 20),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                           errorText: errort, hintText: "Enter Username"),
-                      onEditingComplete: getData,
+                      onEditingComplete: () {
+                        getData();
+                        _autofocus = false;
+                      },
                       controller: controller,
                     ),
                   )
@@ -429,7 +493,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   width: 550,
                   child: Padding(
-                    padding: const EdgeInsets.all(30),
+                    padding: const EdgeInsets.all(25),
                     child: Opacity(
                       opacity: cardopac,
                       child: Card(
@@ -539,72 +603,40 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                      onPressed: () async {
-                        RenderRepaintBoundary boundary =
-                            _globalKey.currentContext?.findRenderObject()
-                                as RenderRepaintBoundary;
-                        late ui.Image img;
-                        try {
-                          img = await boundary.toImage();
-                        } catch (e) {
-                          await showDialog(
-                              context: context,
-                              builder: (_) {
-                                return AlertDialog(
-                                  content: Text(e.toString() +
-                                      "\nTake Screenshot from your device and crop it to get template."),
-                                );
-                              });
-                          return;
-                        }
-                        ByteData? _ = await img.toByteData(
-                            format: ui.ImageByteFormat.png);
-                        Uint8List? da = _?.buffer.asUint8List();
-                        // if (pfp != null &&
-                        // !window.navigator.userAgent
-                        //   .toLowerCase()
-                        // .contains(RegExp("iphone|ipad"))) {
-                        // ip.Image? dimg = ip.decodePng(da!);
-                        // ip.Image? pfpn = ip.decodeImage(pfp!);
-                        // ip.Image cropp = ip.copyCropCircle(pfpn!);
-                        // int rad = !_expand! ? 71 : 218;
-                        // ip.Image res =
-                        //   ip.copyResize(cropp, width: rad, height: rad);
-                        // ip.Image newp = ip.copyInto(dimg!, res,
-                        //    dstX: _expand! ? 166 : 51,
-                        //    dstY: _expand! ? 56 : 58);
-                        //da = ip.encodePng(newp) as Uint8List;
-                        //  }
-                        if (!kReleaseMode) {
-                          await showDialog(
-                              context: context,
-                              builder: (_) {
-                                return AlertDialog(
-                                  backgroundColor: Colors.tealAccent,
-                                  content: Image.memory(da!),
-                                );
-                              });
-                          return;
-                        }
-                        AnchorElement(
-                            href: "data:image/png;base64,${base64Encode(da!)}")
-                          ..download = "Profile.png"
-                          ..click();
-                      },
-                      style: ElevatedButton.styleFrom(
-                          primary: Colors.indigo.shade500),
-                      icon: const Icon(Icons.arrow_right),
-                      label: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Text(
-                          "Export",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70),
+                  ColoredBox(
+                    color: Colors.indigo,
+                    child: PopupMenuButton(
+                      tooltip: "",
+                      padding: EdgeInsets.all(0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)
+                      ),
+                      offset: Offset(90,30),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.arrow_right, color: Colors.indigoAccent,),
+                            const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: Text(
+                                  "Export",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white70),
+                                ),
+                              ),
+                          ],
                         ),
-                      )),
+                      ), itemBuilder: (BuildContext context) {
+                          return [
+                            PopupMenuItem(child: Text("As PNG", style: TextStyle(fontSize: 14),), onTap: download_image),
+                            PopupMenuItem(child: Text("To URL", style: TextStyle(fontSize: 14),), onTap: () {download_image(url: true);})
+                          ];
+                    },),
+                  ),
                 ],
               ),
             ),

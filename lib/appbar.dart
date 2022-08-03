@@ -5,11 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:simple_gradient_text/simple_gradient_text.dart';
 
 
+// ignore: non_constant_identifier_names
 PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
-    preferredSize: Size.fromHeight(100),
+    preferredSize: const Size.fromHeight(100),
     child: Container(
       alignment: Alignment.centerLeft,
-      decoration: BoxDecoration(color: Color(0xff50a18e)),
+      decoration: const BoxDecoration(color: Color(0xff50a18e)),
       child: Padding(
         padding:
             const EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 20),
@@ -33,14 +34,14 @@ PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
-                  side: BorderSide(
+                  side: const BorderSide(
                     color: Colors.pinkAccent,
                     width: 0.8,
                   )),
               onPressed: () async {
                 await launchUrlString("https://github.com/New-dev0/TgProfile");
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.star_sharp,
                 color: Colors.pinkAccent,
               ),
@@ -51,7 +52,7 @@ PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
                   style: GoogleFonts.tauri(
                     fontSize: size.width < 500 ? 12 : 15,
                   ),
-                  colors: [Colors.red, Colors.pinkAccent],
+                  colors: const [Colors.red, Colors.pinkAccent],
                 ),
               ),
             )

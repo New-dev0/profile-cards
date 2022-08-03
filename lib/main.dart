@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
-import 'package:simple_gradient_text/simple_gradient_text.dart';
+import 'appbar.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -35,6 +35,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      onGenerateRoute: (_) => MaterialPageRoute(builder: (_) {
+        return MyHomePage();
+      }),
       home: MyHomePage(),
     );
   }
@@ -46,27 +49,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var controller = TextEditingController(text: "telegram");
+  var controller = TextEditingController(
+      text: Uri.base.queryParameters["query"] ?? "telegram");
   GlobalKey _globalKey = new GlobalKey();
   Uint8List? pfp;
   int cindex = 0;
   double imgradius = 100;
   dynamic kbgg;
   dynamic data;
+  bool _autofocus = true;
   Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
   List<dynamic> Themes = [
     <Color>[Colors.pinkAccent, Colors.blueAccent],
     [Color(0xffff0f7b), Color(0xfff89b29)],
     [Color(0xffe81cff), Color(0xff45caff)],
-    Colors.lime,
+    [Colors.teal, Colors.green],
     Colors.indigoAccent,
   ];
   double cardopac = 1;
   String desc = "";
   bool highlight_url = false;
   bool _show_highl = false;
+  bool _show_prem = false;
   String? errort;
-  bool? _expand = false;
+  bool _dark = Uri.base.queryParameters["dark"] == "true";
+  bool? _expand = Uri.base.queryParameters["expand"] == "true";
   dynamic dropvalue;
   late List<dynamic> s_icons;
   Icon tgicon = Icon(
@@ -82,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getData() {
+    _show_prem = false;
     String text = controller.text;
     if (text == "") {
       return;
@@ -165,12 +173,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (data == null) {
-      return Center(
-          child:
-              LoadingAnimationWidget.beat(color: Colors.tealAccent, size: 100));
+      return Scaffold(
+        // appBar: CustomAppBar(fontsize, size),
+        backgroundColor: Colors.teal.shade100,
+        body: Center(
+            child: LoadingAnimationWidget.beat(color: Colors.teal, size: 100)),
+      );
     }
     List<Widget> MChilds = [];
+    Color textcol = _dark ? Colors.white : Colors.black;
     Widget? desk;
+
     if (data["description"] != null) {
       var align = _expand! ? TextAlign.center : TextAlign.start;
       String dec = tryDecode(data["description"]);
@@ -181,6 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
       desk = Text(
         dec,
         textAlign: align,
+        style: TextStyle(color: textcol),
       );
       if (highlight_url) {
         if (_show_highl) {
@@ -197,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   await launchUrlString(te.trim());
                 };
             } else {
-              tcolor = Colors.black87;
+              tcolor = textcol;
             }
             dchild.add(TextSpan(
                 text: "$element ",
@@ -230,10 +244,23 @@ class _MyHomePageState extends State<MyHomePage> {
       if (data["name"] != null) {
         String name = tryDecode(data["name"]);
         List<Widget> cchld = [
-          Text(
-            name,
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            maxLines: 1,
+          Row(
+            children: [
+              Text(
+                name,
+                style: TextStyle(
+                    fontSize: 32, fontWeight: FontWeight.bold, color: textcol),
+                maxLines: 1,
+              ),
+              if (_show_prem)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Image.asset(
+                    "assets/premium.png",
+                    width: 28,
+                  ),
+                )
+            ],
           ),
         ];
         if (desk != null) {
@@ -271,9 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(8.0),
                   child: ClipRRect(
                       borderRadius: BorderRadius.circular(imgradius),
-                      child: Image.network(data["photo"],
-                          width: 200 //MediaQuery.of(context).size.height / 4,
-                          )),
+                      child: Image.network(data["photo"], width: 200)),
                 )
               ],
             ),
@@ -281,9 +306,19 @@ class _MyHomePageState extends State<MyHomePage> {
           Padding(padding: EdgeInsets.only(top: 20)),
         ]);
         if (data["name"] != null) {
-          MChilds.add(Text(
-            tryDecode(data["name"]),
-            style: TextStyle(fontSize: 25),
+          MChilds.add(Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                tryDecode(data["name"]),
+                style: TextStyle(fontSize: 25, color: textcol),
+              ),
+              if (_show_prem)
+                Padding(
+                  padding: const EdgeInsets.only(left: 5),
+                  child: Image.asset("assets/premium.png", width: 28),
+                )
+            ],
           ));
         }
         if (desk != null) {
@@ -291,13 +326,7 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: SizedBox(
                 width: 350,
-                child:
-                    desk /*Text(
-                  tryDecode(data["description"]),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black87),
-                ))*/
-                ,
+                child: desk,
               )));
         }
       }
@@ -343,61 +372,7 @@ class _MyHomePageState extends State<MyHomePage> {
     double fontsize = size.width < 500 ? 32 : 40;
     return Scaffold(
       backgroundColor: Color(0xffd0e0e3),
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(100),
-          child: Container(
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(color: Color(0xff50a18e)),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 20, top: 20, bottom: 20, right: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //    mainAxisSize: MainAxisSize.min,
-                children: [
-                  BorderedText(
-                    strokeColor: Colors.black87,
-                    strokeWidth: 5,
-                    child: Text(
-                      "Template-Profile",
-                      style: GoogleFonts.lobster(
-                          color: Colors.white,
-                          fontSize: fontsize,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                        side: BorderSide(
-                          color: Colors.pinkAccent,
-                          width: 0.8,
-                        )),
-                    onPressed: () async {
-                      await launchUrlString(
-                          "https://github.com/New-dev0/TgProfile");
-                    },
-                    icon: Icon(
-                      Icons.star_sharp,
-                      color: Colors.pinkAccent,
-                    ),
-                    label: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: GradientText(
-                        "Star Me",
-                        style: GoogleFonts.tauri(
-                          fontSize: size.width < 500 ? 12 : 15,
-                        ),
-                        colors: [Colors.red, Colors.pinkAccent],
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          )),
+      appBar: CustomAppBar(fontsize, size),
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: Padding(
@@ -447,7 +422,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: kbgg is Color ? kbgg : Colors.white70,
-                    gradient: kbgg is Gradient ? kbgg : null,
+                    gradient: kbgg is Gradient
+                        ? kbgg
+                        : (_dark ? LinearGradient(colors: Themes[0]) : null),
                   ),
                   width: 550,
                   child: Padding(
@@ -455,7 +432,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Opacity(
                       opacity: cardopac,
                       child: Card(
-                          color: Colors.white,
+                          color: _dark
+                              ? Colors.black87.withOpacity(.65)
+                              : Colors.white,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
                           child: !_expand!
@@ -499,6 +478,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                   setState(() {
                                     highlight_url = value as bool;
                                   });
+                                }),
+                          if (data["premium"] == true)
+                            Icon(
+                              Icons.star,
+                              color: Colors.pinkAccent,
+                            ),
+                          if (data["premium"] == true)
+                            Checkbox(
+                                value: _show_prem,
+                                onChanged: (bool? _) {
+                                  setState(() => _show_prem = _ as bool);
                                 })
                         ],
                       ),
@@ -525,7 +515,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Slider(
                                 value: imgradius,
                                 min: 50,
-                                max: 120,
+                                max: 100,
                                 onChanged: (_) {
                                   setState(() {
                                     imgradius = _;
@@ -578,15 +568,17 @@ class _MyHomePageState extends State<MyHomePage> {
                               dstY: _expand! ? 56 : 58);
                           da = ip.encodePng(newp) as Uint8List;
                         }
-                        // await showDialog(
-                        //     context: context,
-                        //     builder: (_) {
-                        //       return AlertDialog(
-                        //         backgroundColor: Colors.tealAccent,
-                        //         content: Image.memory(da!),
-                        //       );
-                        //     });
-                        // return;
+                        if (!kReleaseMode) {
+                          await showDialog(
+                              context: context,
+                              builder: (_) {
+                                return AlertDialog(
+                                  backgroundColor: Colors.tealAccent,
+                                  content: Image.memory(da!),
+                                );
+                              });
+                          return;
+                        }
                         AnchorElement(
                             href: "data:image/png;base64,${base64Encode(da!)}")
                           ..download = "Profile.png"

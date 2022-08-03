@@ -14,9 +14,7 @@ A Customisable Profile design generater, made in Flutter.
 
 ## Todo
 - *GitHub Repository*
-- *Telegram Premium Star*
 - *Telegram Bot Tag*
 - *Sharable Urls*
-- *Export as Image*
 - *Export as Url*
 - *New platforms.*

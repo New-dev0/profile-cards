@@ -2,6 +2,7 @@ import 'dart:convert';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 
 import 'helpers.dart';
 import 'dart:typed_data';
@@ -11,7 +12,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 import 'appbar.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
     late ui.Image img;
     try {
-      img = await boundary.toImage();
+      img = await boundary.toImage(pixelRatio: 2);
     } catch (e) {
       await showDialog(
         context: context,
@@ -117,43 +117,70 @@ class _MyHomePageState extends State<MyHomePage> {
         'image',
         buffer!,
       ));
+
       var response = await request.send();
       var json = jsonDecode(await response.stream.bytesToString());
+      String imgurl = "https://imgwhale.xyz/${json['fileId']}";
       await showDialog(
         context: context,
-        builder: (_) {
-          return SimpleDialog(
-            title: const Text('Success'),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-            children: [
-              Column(
-                children: [
-                  const Text(
-                    'Image Uploaded successfully to ImgWhale',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
+        builder: (context) {
+          String text = "COPY";
+          return StatefulBuilder(
+            builder: (BuildContext context,
+                void Function(void Function()) setState) {
+              return SimpleDialog(
+                  title: const Text(
+                    'Success',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  const Padding(padding: EdgeInsets.all(2),),
-                  Row(
-                    children: [
-                      const Spacer(),
-                      TextButton(
-                        child: const Text(
-                          'OPEN',
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Image Uploaded successfully to ImgWhale!',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 20,
                           ),
                         ),
-                        onPressed: () {
-                          launchUrl(Uri.parse("https://imgwhale.xyz/${json['fileId']}"));
-                        },
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ]
+                        Padding(
+                          padding: const EdgeInsets.only(top: 28.0),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              TextButton(
+                                  onPressed: () async {
+                                    Clipboard.setData(
+                                        ClipboardData(text: imgurl));
+                                    setState(() {
+                                      text = "COPIED!";
+                                    });
+                                    await Future.delayed(
+                                        const Duration(seconds: 1));
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(text,
+                                      style: const TextStyle(fontSize: 13))),
+                              TextButton(
+                                child: const Text(
+                                  'OPEN',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  await launchUrlString(imgurl);
+                                },
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ]);
+            },
           );
         },
       );
@@ -184,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
               content: Image.memory(buffer!),
             );
           });
-      return null;
+      return;
     }
     AnchorElement(href: "data:image/png;base64,${base64Encode(buffer!)}")
       ..download = "${controller.text}-profile.png"
@@ -202,7 +229,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _getPhoto();
       return;
     }
-    
 
     if (cindex == 0) {
       http.post(Uri.parse("$MetaAPI?username=$text")).then((value) => {
@@ -230,8 +256,8 @@ class _MyHomePageState extends State<MyHomePage> {
     getData();
     s_icons = [
       tgicon,
-      const ImageIcon(
-          NetworkImage('https://github.githubassets.com/apple-touch-icon-144x144.png'))
+      const ImageIcon(NetworkImage(
+          'https://github.githubassets.com/apple-touch-icon-144x144.png'))
     ];
     dropvalue = tgicon;
   }

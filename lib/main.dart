@@ -286,6 +286,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
       }
     } else {
+      print(data);
       if (data["photo"] != null) {
         MChilds.addAll([
           Padding(
@@ -305,30 +306,30 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Padding(padding: EdgeInsets.only(top: 20)),
         ]);
-        if (data["name"] != null) {
-          MChilds.add(Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                tryDecode(data["name"]),
-                style: TextStyle(fontSize: 25, color: textcol),
-              ),
-              if (_show_prem)
-                Padding(
-                  padding: const EdgeInsets.only(left: 5),
-                  child: Image.asset("assets/premium.png", width: 28),
-                )
-            ],
-          ));
-        }
-        if (desk != null) {
-          MChilds.add(Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: SizedBox(
-                width: 350,
-                child: desk,
-              )));
-        }
+      }
+      if (data["name"] != null) {
+        MChilds.add(Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              tryDecode(data["name"]),
+              style: TextStyle(fontSize: 25, color: textcol),
+            ),
+            if (_show_prem)
+              Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Image.asset("assets/premium.png", width: 28),
+              )
+          ],
+        ));
+      }
+      if (desk != null) {
+        MChilds.add(Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: SizedBox(
+              width: 350,
+              child: desk,
+            )));
       }
     }
     List<Widget> PrimCol = [
@@ -489,7 +490,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                 value: _show_prem,
                                 onChanged: (bool? _) {
                                   setState(() => _show_prem = _ as bool);
-                                })
+                                }),
+                          Text("Dark:"),
+                          Checkbox(
+                            value: _dark,
+                            onChanged: (_) {
+                              setState(() => _dark = _ as bool);
+                            },
+                          )
                         ],
                       ),
                       Row(
@@ -553,21 +561,21 @@ class _MyHomePageState extends State<MyHomePage> {
                         ByteData? _ = await img.toByteData(
                             format: ui.ImageByteFormat.png);
                         Uint8List? da = _?.buffer.asUint8List();
-                        if (pfp != null &&
-                            !window.navigator.userAgent
-                                .toLowerCase()
-                                .contains(RegExp("iphone|ipad"))) {
-                          ip.Image? dimg = ip.decodePng(da!);
-                          ip.Image? pfpn = ip.decodeImage(pfp!);
-                          ip.Image cropp = ip.copyCropCircle(pfpn!);
-                          int rad = !_expand! ? 71 : 218;
-                          ip.Image res =
-                              ip.copyResize(cropp, width: rad, height: rad);
-                          ip.Image newp = ip.copyInto(dimg!, res,
-                              dstX: _expand! ? 166 : 51,
-                              dstY: _expand! ? 56 : 58);
-                          da = ip.encodePng(newp) as Uint8List;
-                        }
+                        // if (pfp != null &&
+                        // !window.navigator.userAgent
+                        //   .toLowerCase()
+                        // .contains(RegExp("iphone|ipad"))) {
+                        // ip.Image? dimg = ip.decodePng(da!);
+                        // ip.Image? pfpn = ip.decodeImage(pfp!);
+                        // ip.Image cropp = ip.copyCropCircle(pfpn!);
+                        // int rad = !_expand! ? 71 : 218;
+                        // ip.Image res =
+                        //   ip.copyResize(cropp, width: rad, height: rad);
+                        // ip.Image newp = ip.copyInto(dimg!, res,
+                        //    dstX: _expand! ? 166 : 51,
+                        //    dstY: _expand! ? 56 : 58);
+                        //da = ip.encodePng(newp) as Uint8List;
+                        //  }
                         if (!kReleaseMode) {
                           await showDialog(
                               context: context,

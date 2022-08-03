@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (_) {
           return SimpleDialog(
-            title: const Text('Sucess'),
+            title: const Text('Success'),
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             children: [
               Column(

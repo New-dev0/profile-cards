@@ -1,4 +1,5 @@
 import 'dart:convert';
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 import 'package:flutter/gestures.dart';
 
@@ -10,15 +11,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'appbar.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
+// ignore: non_constant_identifier_names
 String MetaAPI = "https://tgtemp.vercel.app/";
 
 void main() {
   setPathUrlStrategy();
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -32,14 +36,16 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       onGenerateRoute: (_) => MaterialPageRoute(builder: (_) {
-        return MyHomePage();
+        return const MyHomePage();
       }),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -47,7 +53,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(
       text: Uri.base.queryParameters["query"] ?? "telegram");
-  GlobalKey _globalKey = GlobalKey();
+  final GlobalKey _globalKey = GlobalKey();
   Uint8List? pfp;
   int cindex = 0;
   double imgradius = 100;
@@ -57,8 +63,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
   List<dynamic> Themes = [
     <Color>[Colors.pinkAccent, Colors.blueAccent],
-     [Color(0xffff0f7b), Color(0xfff89b29)],
-    [Color(0xffe81cff), Color(0xff45caff)],
+    [const Color(0xffff0f7b), const Color(0xfff89b29)],
+    [const Color(0xffe81cff), const Color(0xff45caff)],
     [Colors.teal, Colors.green],
     Colors.indigoAccent,
   ];
@@ -84,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void download_image({url : false}) async {
+  void download_image({url = false}) async {
     RenderRepaintBoundary boundary =
         _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
     late ui.Image img;
@@ -92,29 +98,65 @@ class _MyHomePageState extends State<MyHomePage> {
       img = await boundary.toImage();
     } catch (e) {
       await showDialog(
-          context: context,
-          builder: (_) {
-            return AlertDialog(
-              content: Text(e.toString() +
-                  "\nTake Screenshot from your device and crop it to get template."),
-            );
-          });
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: Text(
+                "$e\nTake Screenshot from your device and crop it to get template."),
+          );
+        },
+      );
       return;
     }
-    ByteData? _ = await img.toByteData(format: ui.ImageByteFormat.png);
-    Uint8List? da = _?.buffer.asUint8List();
+    ByteData? byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    Uint8List? buffer = byteData?.buffer.asUint8List();
     if (url) {
-      await showDialog(context: context, builder: (_) {
-        return AlertDialog(
-          content: Text("Not Implemented."),
-        );
-      });
-      return;
-      var request = http.MultipartRequest('GET', Uri.parse('https://imgwhale.xyz/new'));
-      request.files.add(http.MultipartFile.fromBytes("files", da!,));
-      var res = await request.send();
-      var dta = jsonDecode(await res.stream.bytesToString());
-//      await launchUrlString();
+      var request =
+          http.MultipartRequest('POST', Uri.parse('https://imgwhale.xyz/new'));
+      request.files.add(http.MultipartFile.fromBytes(
+        'image',
+        buffer!,
+      ));
+      var response = await request.send();
+      var json = jsonDecode(await response.stream.bytesToString());
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return SimpleDialog(
+            title: const Text('Success'),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            children: [
+              Column(
+                children: [
+                  const Text(
+                    'Image Uploaded successfully to ImgWhale',
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                  const Padding(padding: EdgeInsets.all(2),),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      TextButton(
+                        child: const Text(
+                          'OPEN',
+                          style: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                        onPressed: () {
+                          launchUrl(Uri.parse("https://imgwhale.xyz/${json['fileId']}"));
+                        },
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ]
+          );
+        },
+      );
       return;
     }
     // if (pfp != null &&
@@ -139,12 +181,12 @@ class _MyHomePageState extends State<MyHomePage> {
           builder: (_) {
             return AlertDialog(
               backgroundColor: Colors.tealAccent,
-              content: Image.memory(da!),
+              content: Image.memory(buffer!),
             );
           });
       return null;
     }
-    AnchorElement(href: "data:image/png;base64,${base64Encode(da!)}")
+    AnchorElement(href: "data:image/png;base64,${base64Encode(buffer!)}")
       ..download = "${controller.text}-profile.png"
       ..click();
   }
@@ -160,17 +202,17 @@ class _MyHomePageState extends State<MyHomePage> {
       _getPhoto();
       return;
     }
-    ;
+    
 
     if (cindex == 0) {
-      http.post(Uri.parse("${MetaAPI}?username=${text}")).then((value) => {
+      http.post(Uri.parse("$MetaAPI?username=$text")).then((value) => {
             setState(() => data = jsonDecode(value.body)),
             CacheData[0]![text] = data,
             _getPhoto()
           });
     } else {
       http
-          .get(Uri.parse("https://api.github.com/users/${text}"))
+          .get(Uri.parse("https://api.github.com/users/$text"))
           .then((value) => {
                 setState(() => data = jsonDecode(value.body)),
                 if (data.containsKey("message")) {data["_"] = data["message"]},
@@ -188,8 +230,8 @@ class _MyHomePageState extends State<MyHomePage> {
     getData();
     s_icons = [
       tgicon,
-      ImageIcon(
-          NetworkImage("https://cdn.onlinewebfonts.com/svg/img_415633.png"))
+      const ImageIcon(
+          NetworkImage('https://github.githubassets.com/apple-touch-icon-144x144.png'))
     ];
     dropvalue = tgicon;
   }
@@ -251,7 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var align = _expand! ? TextAlign.center : TextAlign.start;
       String dec = tryDecode(data["description"]);
       List<String> urls = getUrlsFromString(dec);
-      if (urls.length != 0) {
+      if (urls.isNotEmpty) {
         _show_highl = true;
       }
       desk = Text(
@@ -366,7 +408,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          Padding(padding: EdgeInsets.only(top: 20)),
+          const Padding(padding: EdgeInsets.only(top: 20)),
         ]);
       }
       if (data["name"] != null) {
@@ -395,17 +437,17 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     List<Widget> PrimCol = [
-      Padding(
-        padding: const EdgeInsets.only(right: 8.0),
+      const Padding(
+        padding: EdgeInsets.only(right: 8.0),
         child: Text("1:"),
       ),
     ];
     PrimCol.addAll(themeBox());
     PrimCol.add(Padding(
-      padding: EdgeInsets.only(left: 12),
+      padding: const EdgeInsets.only(left: 12),
       child: TextButton(
         style: TextButton.styleFrom(backgroundColor: Colors.white70),
-        child: Text("More"),
+        child: const Text("More"),
         onPressed: () {
           showDialog(
               context: context,
@@ -424,7 +466,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: Text("SELECT"))
+                        child: const Text("SELECT"))
                   ],
                 );
               });
@@ -433,15 +475,15 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
 
     return Scaffold(
-      backgroundColor: Color(0xffd0e0e3),
+      backgroundColor: const Color(0xffd0e0e3),
       appBar: CustomAppBar(fontsize, size),
       body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Padding(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -449,6 +491,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.only(top: 25.0),
                     child: DropdownButton<dynamic>(
                       elevation: 0,
+                      underline: null,
                       value: dropvalue,
                       dropdownColor: Colors.white70,
                       iconSize: 0,
@@ -466,7 +509,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     width: 270,
                     child: TextField(
                       autofocus: _autofocus,
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                           errorText: errort, hintText: "Enter Username"),
@@ -507,7 +550,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   children: MChilds,
                                 )
                               : Padding(
-                                  padding: EdgeInsets.all(5),
+                                  padding: const EdgeInsets.all(5),
                                   child: Column(children: MChilds))),
                     ),
                   ),
@@ -517,25 +560,25 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.only(top: 18.0),
               child: Padding(
-                  padding: EdgeInsets.all(15),
+                  padding: const EdgeInsets.all(15),
                   child: Column(
                     children: [
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: PrimCol,
                       ),
-                      Padding(padding: EdgeInsets.only(top: 15)),
+                      const Padding(padding: EdgeInsets.only(top: 15)),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text("Expand Mode:"),
+                          const Text("Expand Mode:"),
                           Checkbox(
                               value: _expand,
                               onChanged: (bool? value) {
                                 setState(() => _expand = value);
                               }),
-                          Padding(padding: EdgeInsets.only(left: 10)),
-                          if (_show_highl) Text("Highlight Url:"),
+                          const Padding(padding: EdgeInsets.only(left: 10)),
+                          if (_show_highl) const Text("Highlight Url:"),
                           if (_show_highl)
                             Checkbox(
                                 value: highlight_url,
@@ -545,7 +588,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   });
                                 }),
                           if (data["premium"] == true)
-                            Icon(
+                            const Icon(
                               Icons.star,
                               color: Colors.pinkAccent,
                             ),
@@ -555,7 +598,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 onChanged: (bool? _) {
                                   setState(() => _show_prem = _ as bool);
                                 }),
-                          Text("Dark:"),
+                          const Text("Dark:"),
                           Checkbox(
                             value: _dark,
                             onChanged: (_) {
@@ -567,7 +610,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text("Card Opacity:"),
+                          const Text("Card Opacity:"),
                           Slider(
                             value: cardopac,
                             min: 0.6,
@@ -583,7 +626,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text("Image Radius:"),
+                            const Text("Image Radius:"),
                             Slider(
                                 value: imgradius,
                                 min: 50,
@@ -607,35 +650,51 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Colors.indigo,
                     child: PopupMenuButton(
                       tooltip: "",
-                      padding: EdgeInsets.all(0),
+                      padding: const EdgeInsets.all(0),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)
-                      ),
-                      offset: Offset(90,30),
+                          borderRadius: BorderRadius.circular(20)),
+                      offset: const Offset(90, 30),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.arrow_right, color: Colors.indigoAccent,),
-                            const Padding(
-                                padding: EdgeInsets.all(12.0),
-                                child: Text(
-                                  "Export",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white70),
-                                ),
+                          children: const [
+                            Icon(
+                              Icons.arrow_right,
+                              color: Colors.indigoAccent,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text(
+                                "Export",
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white70),
                               ),
+                            ),
                           ],
                         ),
-                      ), itemBuilder: (BuildContext context) {
-                          return [
-                            PopupMenuItem(child: Text("As PNG", style: TextStyle(fontSize: 14),), onTap: download_image),
-                            PopupMenuItem(child: Text("To URL", style: TextStyle(fontSize: 14),), onTap: () {download_image(url: true);})
-                          ];
-                    },),
+                      ),
+                      itemBuilder: (BuildContext context) {
+                        return [
+                          PopupMenuItem(
+                              onTap: download_image,
+                              child: const Text(
+                                "As PNG",
+                                style: TextStyle(fontSize: 14),
+                              )),
+                          PopupMenuItem(
+                              child: const Text(
+                                "To URL",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              onTap: () {
+                                download_image(url: true);
+                              })
+                        ];
+                      },
+                    ),
                   ),
                 ],
               ),

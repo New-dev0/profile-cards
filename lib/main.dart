@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'appbar.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -55,7 +56,9 @@ class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(
       text: Uri.base.queryParameters["query"] ?? "telegram");
   final GlobalKey _globalKey = GlobalKey();
-  int cindex = Uri.base.queryParameters["index"] != null ? int.parse(Uri.base.queryParameters["index"]!) : 0;
+  int cindex = Uri.base.queryParameters["index"] != null
+      ? int.parse(Uri.base.queryParameters["index"]!)
+      : 0;
   double imgradius = 100;
   dynamic kbgg;
   dynamic data;
@@ -570,6 +573,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 key: _globalKey,
                 child: Container(
                   decoration: BoxDecoration(
+                    image: kbgg is Uint8List
+                        ? DecorationImage(
+                            image: MemoryImage(kbgg),
+                            repeat: ImageRepeat.repeat,
+                          )
+                        : null,
                     color: kbgg is Color ? kbgg : Colors.white70,
                     gradient: kbgg is Gradient
                         ? kbgg
@@ -743,6 +752,50 @@ class _MyHomePageState extends State<MyHomePage> {
           ]),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.white70,
+          shape: RoundedRectangleBorder(
+              side: const BorderSide(
+                color: Colors.pinkAccent,
+              ),
+              borderRadius: BorderRadius.circular(50)),
+          tooltip: "Choose Custom Background",
+          child: const Icon(
+            Icons.add_photo_alternate_outlined,
+            color: Colors.pinkAccent,
+          ),
+          onPressed: () async {
+            var _picker = ImagePicker();
+            Uint8List? img =
+                await (await _picker.pickImage(source: ImageSource.gallery))
+                    ?.readAsBytes();
+            setState(() {
+              kbgg = img;
+            });
+          }
+          /*         await showDialog(context: context, builder: (context) {
+            return SimpleDialog(
+              contentPadding: EdgeInsets.all(18),
+              backgroundColor: Colors.tealAccent.shade100.withOpacity(0.75),
+              children: [
+                Text("Enter Image Url", style: TextStyle(fontWeight: FontWeight.bold),),
+                SizedBox(child: TextField(
+                  decoration: InputDecoration(
+                    fillColor: Colors.white70,
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.pinkAccent)
+                    )
+                  ),
+                ), width: 100,),
+                OutlinedButton.icon(onPressed: () {},
+                  style: OutlinedButton.styleFrom(),
+                  label: Text("Choose from Gallery"),
+                icon: Icon(Icons.file_upload_rounded),)
+              ],
+            );
+          });
+        },*/
+          ),
     );
   }
 }

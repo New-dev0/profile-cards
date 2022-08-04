@@ -2,7 +2,7 @@
 *.class
 *.log
 *.pyc
-*.bat
+build.bat
 .firebase/
 *.swp
 .DS_Store

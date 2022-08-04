@@ -55,12 +55,12 @@ class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(
       text: Uri.base.queryParameters["query"] ?? "telegram");
   final GlobalKey _globalKey = GlobalKey();
-  int cindex = 0;
+  int cindex = Uri.base.queryParameters["index"] != null ? int.parse(Uri.base.queryParameters["index"]!) : 0;
   double imgradius = 100;
   dynamic kbgg;
   dynamic data;
   bool _autofocus = true;
-  Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
+  Map<int, Map<String, dynamic>> CacheData = {};
   List<dynamic> Themes = [
     const [Color(0xff020344), Color(0xff28b8d5)],
     [const Color(0xffff0f7b), const Color(0xfff89b29)],
@@ -219,18 +219,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (text == "") {
       return;
     }
+    if (CacheData[cindex] == null) {
+      CacheData[cindex] = {};
+    }
     if (CacheData[cindex]!.containsKey(text)) {
       setState(() => data = CacheData[cindex]![text]);
       return;
     }
 
-    if (cindex == 0) {
-      http.post(Uri.parse("$MetaAPI?username=$text")).then((value) => {
-            setState(() => data = jsonDecode(value.body)),
-            data["url"] = "https://t.me/$text",
-            CacheData[0]![text] = data,
-          });
-    } else {
+    if (cindex == 1) {
       http
           .get(Uri.parse("https://api.github.com/users/$text"))
           .then((value) => {
@@ -245,6 +242,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 CacheData[cindex]![text] = data,
               });
+    } else {
+      var quer = cindex == 0 ? "username" : "twitter";
+      http.post(Uri.parse("$MetaAPI?$quer=$text")).then((value) => {
+            setState(() => data = jsonDecode(value.body)),
+            if (cindex == 0) {data["url"] = "https://t.me/$text"},
+            CacheData[cindex]![text] = data,
+          });
     }
   }
 
@@ -257,7 +261,9 @@ class _MyHomePageState extends State<MyHomePage> {
       Image.network(
         'https://cdn-icons-png.flaticon.com/512/2111/2111425.png',
         width: 30,
-      )
+      ),
+      Image.network("https://img.icons8.com/fluency/48/000000/twitter.png",
+          width: 30)
     ];
     dropvalue = tgicon;
   }
@@ -433,9 +439,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(imgradius),
                       child: data["photo"] != null
                           ? Image.network(data["photo"], width: 200)
-                          : QrImage(data: data["url"], size: 200,
-                      foregroundColor: textcol,
-                      semanticsLabel: controller.text,)),
+                          : QrImage(
+                              data: data["url"],
+                              size: 200,
+                              foregroundColor: textcol,
+                              semanticsLabel: controller.text,
+                            )),
                 )
               ],
             ),
@@ -508,7 +517,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       backgroundColor: const Color(0xffd0e0e3),
-      appBar: CustomAppBar(fontsize, size),
+      appBar: CustomAppBar(context, fontsize, size),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(

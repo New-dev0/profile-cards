@@ -11,10 +11,9 @@ A Customisable Profile design generater, made in Flutter.
 ## Supported Platform Usernames:
 - *Telegram*
 - *GitHub Users*
+- *Twitter*
 
 ## Todo
 - *GitHub Repository*
 - *Telegram Bot Tag*
-- *Sharable Urls*
-- *Export as Url*
 - *New platforms.*

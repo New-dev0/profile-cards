@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:bordered_text/bordered_text.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:bordered_text/bordered_text.dart' show BorderedText;
+import 'package:url_launcher/url_launcher_string.dart' show launchUrlString;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:simple_gradient_text/simple_gradient_text.dart';
+import 'package:simple_gradient_text/simple_gradient_text.dart' show GradientText;
 
 
 // ignore: non_constant_identifier_names
-PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
+PreferredSize CustomAppBar(context, fontsize, size) => PreferredSize(
     preferredSize: const Size.fromHeight(100),
     child: Container(
       alignment: Alignment.centerLeft,
@@ -18,15 +18,22 @@ PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //    mainAxisSize: MainAxisSize.min,
           children: [
-            BorderedText(
-              strokeColor: Colors.black87,
-              strokeWidth: 5,
-              child: Text(
-                "Template-Profile",
-                style: GoogleFonts.lobster(
-                    color: Colors.white,
-                    fontSize: fontsize,
-                    fontWeight: FontWeight.bold),
+            GestureDetector(
+              onTap: () {
+                if (Uri.base.hasQuery) {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, "/");
+              }},
+              child: BorderedText(
+                strokeColor: Colors.black87,
+                strokeWidth: 5,
+                child: Text(
+                  "Template-Generator",
+                  style: GoogleFonts.lobster(
+                      color: Colors.white,
+                      fontSize: fontsize,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             OutlinedButton.icon(
@@ -39,7 +46,7 @@ PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
                     width: 0.8,
                   )),
               onPressed: () async {
-                await launchUrlString("https://github.com/New-dev0/TgProfile");
+                await launchUrlString("https://github.com/New-dev0/Template-Generator");
               },
               icon: const Icon(
                 Icons.star_sharp,

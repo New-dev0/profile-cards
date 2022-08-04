@@ -1,6 +1,7 @@
 import 'dart:convert';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
@@ -54,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
   var controller = TextEditingController(
       text: Uri.base.queryParameters["query"] ?? "telegram");
   final GlobalKey _globalKey = GlobalKey();
-  Uint8List? pfp;
   int cindex = 0;
   double imgradius = 100;
   dynamic kbgg;
@@ -62,9 +62,10 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _autofocus = true;
   Map<int, Map<String, dynamic>> CacheData = {0: {}, 1: {}};
   List<dynamic> Themes = [
-    <Color>[Colors.pinkAccent, Colors.blueAccent],
+    const [Color(0xff020344), Color(0xff28b8d5)],
     [const Color(0xffff0f7b), const Color(0xfff89b29)],
     [const Color(0xffe81cff), const Color(0xff45caff)],
+    const [Color(0xffcf414b), Color(0xff852170)],
     [Colors.teal, Colors.green],
     Colors.indigoAccent,
   ];
@@ -83,12 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
     size: 40,
     color: Colors.blue.shade700,
   );
-
-  void _getPhoto() {
-    if (data["photo"] != null) {
-      http.get(Uri.parse(data["photo"])).then((value) => pfp = value.bodyBytes);
-    }
-  }
 
   void download_image({url = false}) async {
     RenderRepaintBoundary boundary =
@@ -226,25 +221,28 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (CacheData[cindex]!.containsKey(text)) {
       setState(() => data = CacheData[cindex]![text]);
-      _getPhoto();
       return;
     }
 
     if (cindex == 0) {
       http.post(Uri.parse("$MetaAPI?username=$text")).then((value) => {
             setState(() => data = jsonDecode(value.body)),
+            data["url"] = "https://t.me/$text",
             CacheData[0]![text] = data,
-            _getPhoto()
           });
     } else {
       http
           .get(Uri.parse("https://api.github.com/users/$text"))
           .then((value) => {
                 setState(() => data = jsonDecode(value.body)),
-                if (data.containsKey("message")) {data["_"] = data["message"]},
-                data["photo"] = data["avatar_url"],
-                data["description"] = data["bio"],
-                if (data["name"] == null) {data["name"] = data["login"]},
+                if (data.containsKey("message"))
+                  {data["_"] = data["message"]}
+                else
+                  {
+                    data["photo"] = data["avatar_url"],
+                    data["description"] = data["bio"],
+                    if (data["name"] == null) {data["name"] = data["login"]}
+                  },
                 CacheData[cindex]![text] = data,
               });
     }
@@ -256,8 +254,10 @@ class _MyHomePageState extends State<MyHomePage> {
     getData();
     s_icons = [
       tgicon,
-      const ImageIcon(NetworkImage(
-          'https://github.githubassets.com/apple-touch-icon-144x144.png'))
+      Image.network(
+        'https://cdn-icons-png.flaticon.com/512/2111/2111425.png',
+        width: 30,
+      )
     ];
     dropvalue = tgicon;
   }
@@ -303,7 +303,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     if (data == null) {
       return Scaffold(
-        // appBar: CustomAppBar(fontsize, size),
         backgroundColor: Colors.teal.shade100,
         body: Center(
             child: LoadingAnimationWidget.beat(color: Colors.teal, size: 100)),
@@ -315,109 +314,112 @@ class _MyHomePageState extends State<MyHomePage> {
     Color textcol = _dark ? Colors.white70 : Colors.black;
     Widget? desk;
 
-    if (data["description"] != null) {
-      var align = _expand! ? TextAlign.center : TextAlign.start;
-      String dec = tryDecode(data["description"]);
-      List<String> urls = getUrlsFromString(dec);
-      if (urls.isNotEmpty) {
-        _show_highl = true;
-      }
-      desk = Text(
-        dec,
-        textAlign: align,
-        style: TextStyle(color: textcol),
-      );
-      if (highlight_url) {
-        if (_show_highl) {
-          var dchild = <TextSpan>[];
-          dec.split(" ").forEach((String element) {
-            Color tcolor;
-            GestureRecognizer? gr;
-            if (urls.contains(element)) {
-              var te =
-                  element.startsWith("http") ? element : "https://" + element;
-              tcolor = Colors.blueAccent.shade200;
-              gr = TapGestureRecognizer()
-                ..onTap = () async {
-                  await launchUrlString(te.trim());
-                };
-            } else {
-              tcolor = textcol;
-            }
-            dchild.add(TextSpan(
-                text: "$element ",
-                recognizer: gr,
-                style: TextStyle(
-                  color: tcolor,
-                )));
-          });
-          desk = RichText(
-            text: TextSpan(children: dchild),
-            textAlign: align,
-          );
-        }
-      }
-    }
     if (data["_"] != null) {
       errort = "User Not Found!";
-    } else if (errort != null && data["name"] != null) {
-      errort = null;
-    }
-    if (_expand == false) {
-      if (data["photo"] != null) {
-        MChilds.add(Padding(
-          padding: const EdgeInsets.only(left: 18.0, top: 25, bottom: 25),
-          child: CircleAvatar(
-              backgroundImage: NetworkImage(data["photo"]), radius: 35),
-        ));
+    } else {
+      if (errort != null && data["name"] != null) {
+        errort = null;
+      }
+      if (data["description"] != null) {
+        var align = _expand! ? TextAlign.center : TextAlign.start;
+        String dec = tryDecode(data["description"]);
+        List<String> urls = getUrlsFromString(dec);
+        if (urls.isNotEmpty) {
+          _show_highl = true;
+        }
+        desk = Text(
+          dec,
+          textAlign: align,
+          style: TextStyle(color: textcol),
+        );
+        if (highlight_url) {
+          if (_show_highl) {
+            var dchild = <TextSpan>[];
+            dec.split(" ").forEach((String element) {
+              Color tcolor;
+              GestureRecognizer? gr;
+              if (urls.contains(element)) {
+                var te =
+                    element.startsWith("http") ? element : "https://" + element;
+                tcolor = Colors.blueAccent.shade200;
+                gr = TapGestureRecognizer()
+                  ..onTap = () async {
+                    await launchUrlString(te.trim());
+                  };
+              } else {
+                tcolor = textcol;
+              }
+              dchild.add(TextSpan(
+                  text: "$element ",
+                  recognizer: gr,
+                  style: TextStyle(
+                    color: tcolor,
+                  )));
+            });
+            desk = RichText(
+              text: TextSpan(children: dchild),
+              textAlign: align,
+            );
+          }
+        }
       }
 
-      if (data["name"] != null) {
-        String name = tryDecode(data["name"]);
-        List<Widget> cchld = [
-          Row(
-            children: [
-              Text(
-                name,
-                style: TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.bold, color: textcol),
-                maxLines: 1,
-              ),
-              if (_show_prem)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Image.asset(
-                    "assets/premium.png",
-                    width: 28,
-                  ),
-                )
-            ],
-          ),
-        ];
-        if (desk != null) {
-          //   desc = tryDecode(data["description"]);
-          cchld.add(Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: desk,
+      if (_expand == false) {
+        if (data["photo"] != null) {
+          MChilds.add(Padding(
+            padding: const EdgeInsets.only(left: 18.0, top: 25, bottom: 25),
+            child: CircleAvatar(
+                backgroundImage: NetworkImage(data["photo"]), radius: 35),
           ));
         }
 
-        MChilds.add(Flexible(
-          child: Padding(
-            padding: const EdgeInsets.all(22),
-            child: SizedBox(
-              width: 450,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: cchld,
+        if (data["name"] != null) {
+          String name = tryDecode(data["name"]);
+          List<Widget> cchld = [
+            Row(
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: textcol),
+                  maxLines: 1,
+                ),
+                if (_show_prem)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Image.asset(
+                      "assets/premium.png",
+                      width: 28,
+                    ),
+                  )
+              ],
+            ),
+          ];
+          if (desk != null) {
+            //   desc = tryDecode(data["description"]);
+            cchld.add(Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: desk,
+            ));
+          }
+
+          MChilds.add(Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: SizedBox(
+                width: 450,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: cchld,
+                ),
               ),
             ),
-          ),
-        ));
-      }
-    } else {
-      if (data["photo"] != null) {
+          ));
+        }
+      } else {
         MChilds.addAll([
           Padding(
             padding: const EdgeInsets.only(top: 18.0),
@@ -429,37 +431,41 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(8.0),
                   child: ClipRRect(
                       borderRadius: BorderRadius.circular(imgradius),
-                      child: Image.network(data["photo"], width: 200)),
+                      child: data["photo"] != null
+                          ? Image.network(data["photo"], width: 200)
+                          : QrImage(data: data["url"], size: 200,
+                      foregroundColor: textcol,
+                      semanticsLabel: controller.text,)),
                 )
               ],
             ),
           ),
           const Padding(padding: EdgeInsets.only(top: 20)),
         ]);
-      }
-      if (data["name"] != null) {
-        MChilds.add(Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              tryDecode(data["name"]),
-              style: TextStyle(fontSize: 25, color: textcol),
-            ),
-            if (_show_prem)
-              Padding(
-                padding: const EdgeInsets.only(left: 5),
-                child: Image.asset("assets/premium.png", width: 28),
-              )
-          ],
-        ));
-      }
-      if (desk != null) {
-        MChilds.add(Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: SizedBox(
-              width: 350,
-              child: desk,
-            )));
+        if (data["name"] != null) {
+          MChilds.add(Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                tryDecode(data["name"]),
+                style: TextStyle(fontSize: 25, color: textcol),
+              ),
+              if (_show_prem)
+                Padding(
+                  padding: const EdgeInsets.only(left: 5),
+                  child: Image.asset("assets/premium.png", width: 28),
+                )
+            ],
+          ));
+        }
+        if (desk != null) {
+          MChilds.add(Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: SizedBox(
+                width: 350,
+                child: desk,
+              )));
+        }
       }
     }
     List<Widget> PrimCol = [

@@ -33,7 +33,7 @@ PreferredSize CustomAppBar(fontsize, size) => PreferredSize(
               style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(10)),
                   side: const BorderSide(
                     color: Colors.pinkAccent,
                     width: 0.8,

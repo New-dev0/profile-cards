@@ -4,9 +4,11 @@ import 'dart:html';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'dart:math' as math;
 
 import 'helpers.dart';
 import 'dart:typed_data';
+import 'package:lottie/lottie.dart';
 import 'dart:ui' as ui;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -137,12 +139,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Image Uploaded successfully to ImgWhale!',
-                          style: TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
+                        Lottie.asset("assets/sticker.json",
+                            width: 250, frameRate: FrameRate(8)),
+                        const Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Text(
+                              'Image Uploaded successfully to ImgWhale!',
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            )),
                         Padding(
                           padding: const EdgeInsets.only(top: 28.0),
                           child: Row(
@@ -311,10 +317,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (data == null) {
+      const anims = [
+        LoadingAnimationWidget.beat,
+        LoadingAnimationWidget.threeArchedCircle,
+        LoadingAnimationWidget.threeRotatingDots
+      ];
+      var random = anims[math.Random().nextInt(anims.length)];
       return Scaffold(
         backgroundColor: Colors.teal.shade100,
-        body: Center(
-            child: LoadingAnimationWidget.beat(color: Colors.teal, size: 100)),
+        body: Center(child: random(color: Colors.teal, size: 100)),
       );
     }
     var size = MediaQuery.of(context).size;
@@ -462,6 +473,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 tryDecode(data["name"]),
                 style: TextStyle(fontSize: 25, color: textcol),
               ),
+              if (data["bot"] == true)
+                Padding(
+                  padding: EdgeInsets.only(left: 5),
+                  child: Image.network(
+                    "https://img.icons8.com/fluency/48/000000/bot.png",
+                    width: 30,
+                  ),
+                ),
               if (_show_prem)
                 Padding(
                   padding: const EdgeInsets.only(left: 5),

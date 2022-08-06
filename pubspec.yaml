@@ -38,13 +38,13 @@ dependencies:
   http: ^0.13.4
   google_fonts: ^3.0.1
   bordered_text: ^2.0.0
-  sizer: ^2.0.15
   url_launcher: ^6.1.4
   flutter_colorpicker: ^1.0.3
   loading_animation_widget: ^1.2.0+2
   simple_gradient_text: ^1.2.3
   qr_flutter: ^4.0.0
   image_picker: ^0.8.5+3
+  lottie: ^1.4.1
 
 dev_dependencies:
   flutter_test:

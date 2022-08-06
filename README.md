@@ -12,6 +12,7 @@ A Customisable Profile design generater, made in Flutter.
 - *Telegram*
 - *GitHub Users*
 - *Twitter*
+- *Koo*
 
 ## Todo
 - *GitHub Repository*

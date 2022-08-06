@@ -252,7 +252,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 CacheData[cindex]![text] = data,
               });
     } else {
-      var quer = cindex == 0 ? "username" : "twitter";
+      var Z = {0: "username", 2: "twitter", 3: "koo"};
+      var quer = Z[cindex];
       http.post(Uri.parse("$MetaAPI?$quer=$text")).then((value) => {
             setState(() => data = jsonDecode(value.body)),
             if (cindex == 0) {data["url"] = "https://t.me/$text"},
@@ -272,6 +273,9 @@ class _MyHomePageState extends State<MyHomePage> {
         width: 30,
       ),
       Image.network("https://img.icons8.com/fluency/48/000000/twitter.png",
+          width: 30),
+      Image.network(
+          "https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco/nrqitxhojdkdpwjxynkd",
           width: 30)
     ];
     dropvalue = tgicon;

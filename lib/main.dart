@@ -62,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ? int.parse(Uri.base.queryParameters["index"]!)
       : 0;
   double imgradius = 100;
+  bool _show_expand = true;
   dynamic kbgg;
   dynamic data;
   bool _autofocus = true;
@@ -224,6 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void getData() {
     _show_prem = false;
+    _show_expand = true;
     String text = controller.text;
     if (text == "") {
       return;
@@ -252,7 +254,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 CacheData[cindex]![text] = data,
               });
     } else {
-      var Z = {0: "username", 2: "twitter", 3: "koo"};
+      var Z = {0: "username", 2: "twitter", 3: "ytchannel", 4: "koo"};
+      if (cindex == 3) {
+        setState(() {
+          _expand = true;
+          _show_expand = false;
+          text = text.split("/").last;
+          if (!text.contains("user|c|channel")) {
+            errort = "Only Channel Urls are Supported..";
+          }
+        });
+      }
+      ;
       var quer = Z[cindex];
       http.post(Uri.parse("$MetaAPI?$quer=$text")).then((value) => {
             setState(() => data = jsonDecode(value.body)),
@@ -273,6 +286,8 @@ class _MyHomePageState extends State<MyHomePage> {
         width: 30,
       ),
       Image.network("https://img.icons8.com/fluency/48/000000/twitter.png",
+          width: 30),
+      Image.network("https://img.icons8.com/color/48/000000/youtube-play.png",
           width: 30),
       Image.network(
           "https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco/nrqitxhojdkdpwjxynkd",
@@ -644,12 +659,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text("Expand Mode:"),
-                          Checkbox(
-                              value: _expand,
-                              onChanged: (bool? value) {
-                                setState(() => _expand = value);
-                              }),
+                          if (_show_expand) const Text("Expand Mode:"),
+                          if (_show_expand)
+                            Checkbox(
+                                value: _expand,
+                                onChanged: (bool? value) {
+                                  setState(() => _expand = value);
+                                }),
                           const Padding(padding: EdgeInsets.only(left: 10)),
                           if (_show_highl) const Text("Highlight Url:"),
                           if (_show_highl)

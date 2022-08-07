@@ -12,9 +12,9 @@ A Customisable Profile design generater, made in Flutter.
 - *Telegram*
 - *GitHub Users*
 - *Twitter*
+- *Youtube Channels*
 - *Koo*
 
 ## Todo
 - *GitHub Repository*
-- *Telegram Bot Tag*
 - *New platforms.*

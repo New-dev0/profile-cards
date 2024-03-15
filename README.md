@@ -8,12 +8,12 @@ A Customisable Profile design generater, made in Flutter.
 - Check it out at [template.newdev0.in](https://template.newdev0.in/)
 
 
-## Supported Platform Usernames:
+## ~~Supported~~ Working Platform Usernames:
 - *Telegram*
 - *GitHub Users*
-- *Twitter*
-- *Youtube Channels*
-- *Koo*
+- ~~*Twitter*~~
+- ~~*Youtube Channels*~~
+- ~~*Koo*~~
 
 ## Todo
 - *GitHub Repository*

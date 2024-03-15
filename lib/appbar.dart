@@ -7,10 +7,10 @@ import 'package:simple_gradient_text/simple_gradient_text.dart' show GradientTex
 
 // ignore: non_constant_identifier_names
 PreferredSize CustomAppBar(context, fontsize, size) => PreferredSize(
-    preferredSize: const Size.fromHeight(100),
+    preferredSize: const Size.fromHeight(80),
     child: Container(
       alignment: Alignment.centerLeft,
-      decoration: const BoxDecoration(color: Color(0xff50a18e)),
+      decoration: const BoxDecoration(color: Color(0xff263b46)),
       child: Padding(
         padding:
             const EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 20),
@@ -38,28 +38,31 @@ PreferredSize CustomAppBar(context, fontsize, size) => PreferredSize(
             ),
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                elevation: 5,
+                  backgroundColor: const Color(0xF9707E73),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  side: const BorderSide(
-                    color: Colors.pinkAccent,
-                    width: 0.8,
-                  )),
+                      borderRadius: BorderRadius.circular(3)),
+                  // side: const BorderSide(
+                  //   color: Colors.pinkAccent,
+                  //   width: 0.8,
+                  // )
+              ),
               onPressed: () async {
                 await launchUrlString("https://github.com/New-dev0/Template-Generator");
               },
               icon: const Icon(
                 Icons.star_sharp,
-                color: Colors.pinkAccent,
+                color: Colors.white,
               ),
               label: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: GradientText(
+                child: Text(
                   "Star Me",
-                  style: GoogleFonts.tauri(
+
+                  style: GoogleFonts.arya(
                     fontSize: size.width < 500 ? 12 : 15,
+                    color: Colors.white
                   ),
-                  colors: const [Colors.red, Colors.pinkAccent],
                 ),
               ),
             )

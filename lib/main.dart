@@ -1,13 +1,14 @@
 import 'dart:convert';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:math' as math;
 
 import 'helpers.dart';
-import 'dart:typed_data';
 import 'package:lottie/lottie.dart';
 import 'dart:ui' as ui;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -22,7 +23,7 @@ import 'package:url_strategy/url_strategy.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 // ignore: non_constant_identifier_names
-String MetaAPI = "https://tgtemp.vercel.app/";
+String MetaAPI = "https://tgt-pi.vercel.app/";
 
 void main() {
   setPathUrlStrategy();
@@ -73,7 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
     [const Color(0xffe81cff), const Color(0xff45caff)],
     const [Color(0xffcf414b), Color(0xff852170)],
     [Colors.teal, Colors.green],
-    Colors.indigoAccent,
+    const Color(0xff3C3744),
+    Colors.indigoAccent
   ];
   double cardopac = 1;
   String desc = "";
@@ -81,8 +83,12 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _show_highl = false;
   bool _show_prem = false;
   String? errort;
-  bool _dark = Uri.base.queryParameters["dark"] == "true";
-  bool? _expand = Uri.base.queryParameters["expand"] == "true";
+  bool _dark = Uri.base.queryParameters.containsKey("dark")
+      ? Uri.base.queryParameters["dark"] == "true"
+      : true;
+  bool? _expand = Uri.base.queryParameters.containsKey("expand")
+      ? Uri.base.queryParameters["expand"] == "true"
+      : true;
   dynamic dropvalue;
   late List<dynamic> s_icons;
   Icon tgicon = Icon(
@@ -265,7 +271,6 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         });
       }
-      ;
       var quer = Z[cindex];
       http.post(Uri.parse("$MetaAPI?$quer=$text")).then((value) => {
             setState(() => data = jsonDecode(value.body)),
@@ -278,6 +283,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      kbgg = LinearGradient(colors: Themes[0]);
+    });
     getData();
     s_icons = [
       tgicon,
@@ -290,7 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Image.network("https://img.icons8.com/color/48/000000/youtube-play.png",
           width: 30),
       Image.network(
-          "https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco/nrqitxhojdkdpwjxynkd",
+          "https://images.squarespace-cdn.com/content/v1/584fbae3e6f2e1c321b372b8/1628851597724-RE4I86WSMS2T2FY2Q67D/13.Koo_Bird_Circle_White+Outline+on+Yellow.png",
           width: 30)
     ];
     dropvalue = tgicon;
@@ -338,17 +346,17 @@ class _MyHomePageState extends State<MyHomePage> {
     if (data == null) {
       const anims = [
         LoadingAnimationWidget.beat,
-        LoadingAnimationWidget.threeArchedCircle,
+//        LoadingAnimationWidget.threeArchedCircle,
         LoadingAnimationWidget.threeRotatingDots
       ];
       var random = anims[math.Random().nextInt(anims.length)];
       return Scaffold(
-        backgroundColor: Colors.teal.shade100,
-        body: Center(child: random(color: Colors.teal, size: 100)),
+        backgroundColor: Color(0xff293837),
+        body: Center(child: random(color: Colors.white70, size: 100)),
       );
     }
     var size = MediaQuery.of(context).size;
-    double fontsize = size.width < 500 ? 32 : 40;
+    double fontsize = size.width < 500 ? 32 : 30;
     List<Widget> MChilds = [];
     Color textcol = _dark ? Colors.white70 : Colors.black;
     Widget? desk;
@@ -379,7 +387,7 @@ class _MyHomePageState extends State<MyHomePage> {
               GestureRecognizer? gr;
               if (urls.contains(element)) {
                 var te =
-                    element.startsWith("http") ? element : "https://" + element;
+                    element.startsWith("http") ? element : "https://$element";
                 tcolor = Colors.blueAccent.shade200;
                 gr = TapGestureRecognizer()
                   ..onTap = () async {
@@ -472,7 +480,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(imgradius),
                       child: data["photo"] != null
                           ? Image.network(data["photo"], width: 200)
-                          : QrImage(
+                          : QrImageView(
                               data: data["url"],
                               size: 200,
                               foregroundColor: textcol,
@@ -494,7 +502,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               if (data["bot"] == true)
                 Padding(
-                  padding: EdgeInsets.only(left: 5),
+                  padding: const EdgeInsets.only(left: 5),
                   child: Image.network(
                     "https://img.icons8.com/fluency/48/000000/bot.png",
                     width: 30,
@@ -557,7 +565,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
 
     return Scaffold(
-      backgroundColor: const Color(0xffd0e0e3),
+      backgroundColor: Color.fromARGB(255, 30, 35, 35),
       appBar: CustomAppBar(context, fontsize, size),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -582,8 +590,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               DropdownMenuItem<dynamic>(value: e, child: e))
                           .toList(),
                       onChanged: (_) {
-                        setState(
-                            () => {dropvalue = _, cindex = s_icons.indexOf(_)});
+                        setState(() {
+                          dropvalue = _;
+                          cindex = s_icons.indexOf(_);
+                        });
                       },
                     ),
                   ),
@@ -591,10 +601,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     width: 270,
                     child: TextField(
                       autofocus: _autofocus,
-                      style: const TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20, color: Colors.white),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
-                          errorText: errort, hintText: "Enter Username"),
+                        errorText: errort,
+                        hintText: "Enter Username",
+                      ),
                       onEditingComplete: () {
                         getData();
                         _autofocus = false;
@@ -618,9 +630,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           )
                         : null,
                     color: kbgg is Color ? kbgg : Colors.white70,
-                    gradient: kbgg is Gradient
-                        ? kbgg
-                        : (_dark ? LinearGradient(colors: Themes[0]) : null),
+                    gradient: kbgg is Gradient ? kbgg : null,
                   ),
                   width: 550,
                   child: Padding(
@@ -659,7 +669,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (_show_expand) const Text("Expand Mode:"),
+                          if (_show_expand)
+                            const Text("Expand Mode:",
+                                style: TextStyle(color: Colors.white)),
                           if (_show_expand)
                             Checkbox(
                                 value: _expand,
@@ -667,7 +679,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                   setState(() => _expand = value);
                                 }),
                           const Padding(padding: EdgeInsets.only(left: 10)),
-                          if (_show_highl) const Text("Highlight Url:"),
+                          if (_show_highl)
+                            const Text("Highlight Url:",
+                                style: TextStyle(color: Colors.white)),
                           if (_show_highl)
                             Checkbox(
                                 value: highlight_url,
@@ -687,7 +701,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 onChanged: (bool? _) {
                                   setState(() => _show_prem = _ as bool);
                                 }),
-                          const Text("Dark:"),
+                          const Text("Dark:",
+                              style: TextStyle(color: Colors.white)),
                           Checkbox(
                             value: _dark,
                             onChanged: (_) {
@@ -699,7 +714,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text("Card Opacity:"),
+                          const Text("Card Opacity:",
+                              style: TextStyle(color: Colors.white)),
                           Slider(
                             value: cardopac,
                             min: 0.6,
@@ -715,7 +731,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text("Image Radius:"),
+                            const Text("Image Radius:",
+                                style: TextStyle(color: Colors.white)),
                             Slider(
                                 value: imgradius,
                                 min: 50,
@@ -741,19 +758,21 @@ class _MyHomePageState extends State<MyHomePage> {
                       tooltip: "",
                       padding: const EdgeInsets.all(0),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(20),
+                      ),
                       offset: const Offset(90, 30),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.arrow_right,
                               color: Colors.indigoAccent,
                             ),
                             Padding(
-                              padding: EdgeInsets.all(12.0),
+                              padding: EdgeInsets.only(
+                                  top: 5, bottom: 5, right: 20, left: 20),
                               child: Text(
                                 "Export",
                                 style: TextStyle(
@@ -804,9 +823,9 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Colors.pinkAccent,
           ),
           onPressed: () async {
-            var _picker = ImagePicker();
+            var picker = ImagePicker();
             Uint8List? img =
-                await (await _picker.pickImage(source: ImageSource.gallery))
+                await (await picker.pickImage(source: ImageSource.gallery))
                     ?.readAsBytes();
             setState(() {
               kbgg = img;

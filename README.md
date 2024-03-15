@@ -1,11 +1,10 @@
 # Template-Generator
 A Customisable Profile design generater, made in Flutter.
 
-![Devesh Pal](https://imgwhale.xyz/2l6221l4wb42sj)
+![Telegram Profile Cards](./screenshots/image.png)
 
-<img alt="Devesh Pal" src="https://imgwhale.xyz/3qkev22l6az35m3" width=220><img src="https://imgwhale.xyz/3qkev22l6az50q0" alt="New-Dev0" width=230>
 
-- Check it out at [template.newdev0.in](https://template.newdev0.in/)
+- Check it out at [template.newdev0.in](https://templatedev0.web.app/)
 
 
 ## ~~Supported~~ Working Platform Usernames:
@@ -18,3 +17,10 @@ A Customisable Profile design generater, made in Flutter.
 ## Todo
 - *GitHub Repository*
 - *New platforms.*
+
+
+## Gallery
+
+![Devesh Pal](./screenshots/karboncopy-profile.png)
+
+![Devesh Pal](./screenshots/New-dev0-profile.png)
